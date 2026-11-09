@@ -1484,7 +1484,7 @@
     }
 
     const modal = openModal(`
-      <div style="max-width:520px;margin:0 auto">
+      <div style="width:100%;max-width:520px;margin:0 auto;box-sizing:border-box">
         <div style="text-align:center;margin-bottom:20px">
           <div id="modalAvatarPreview" style="display:inline-block;position:relative;margin-bottom:10px">
             ${getPreviewHtml(selectedAvatar)}
@@ -1509,15 +1509,15 @@
           <label style="font-size:13px;font-weight:700;display:block;margin-bottom:10px">
             Готовые маскоты и темы NORD 3D:
           </label>
-          <div class="avatar-preset-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px">
+          <div class="avatar-preset-grid">
             ${PRESET_AVATARS.map((p) => {
               const isSel = selectedAvatar === "preset:" + p.id;
               return `
-                <div class="avatar-preset-tile ${isSel ? "active" : ""}" data-preset="preset:${p.id}" style="cursor:pointer;background:var(--bg-subtle);border:2px solid ${isSel ? "var(--accent)" : "var(--border)"};border-radius:14px;padding:10px 6px;text-align:center;transition:all .15s ease">
-                  <div style="width:42px;height:42px;border-radius:50%;background:${p.bg};display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 6px;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
+                <div class="avatar-preset-tile ${isSel ? "active" : ""}" data-preset="preset:${p.id}">
+                  <div class="avatar-preset-icon" style="background:${p.bg}">
                     ${p.icon}
                   </div>
-                  <div style="font-size:11.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+                  <div class="avatar-preset-name">${p.name}</div>
                 </div>
               `;
             }).join("")}
