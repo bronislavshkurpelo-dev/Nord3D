@@ -95,11 +95,11 @@ test('Image assets exist and have valid sizes', () => {
   });
 });
 
-test('All HTML files have stylesheet link with current cache version ?v=17', () => {
+test('All HTML files have stylesheet link with current cache version ?v=18', () => {
   const htmlFiles = ['index.html', 'order.html', 'scan.html', 'orders.html', 'printers.html', 'cabinet.html', 'wallet.html', 'rating.html'];
   htmlFiles.forEach(f => {
     const content = fs.readFileSync(path.join(DIR, f), 'utf8');
-    assert.ok(content.includes('styles.css?v=17'), `${f} missing styles.css?v=17`);
+    assert.ok(content.includes('styles.css?v=18'), `${f} missing styles.css?v=18`);
   });
 });
 

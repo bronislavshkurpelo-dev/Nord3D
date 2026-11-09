@@ -1059,7 +1059,7 @@ const server = http.createServer(async (req, res) => {
 
     const headers = {
       'Content-Type': contentType,
-      'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=604800',
+      'Cache-Control': isHtml ? 'no-cache' : (/\.(css|js)$/.test(filePath) ? 'no-cache, must-revalidate' : 'public, max-age=604800'),
       'X-Content-Type-Options': 'nosniff'
     };
 
