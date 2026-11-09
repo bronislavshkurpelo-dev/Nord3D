@@ -1469,6 +1469,13 @@ test('EscrowService implements strict ACID transaction isolation (BEGIN TRANSACT
   assert.strictEqual(typeof server.EscrowService.release, 'function', 'EscrowService must implement release');
   assert.strictEqual(typeof server.EscrowService.refund, 'function', 'EscrowService must implement refund');
 
+  // Ensure test customer has sufficient balance for test
+  server.sqlite.exec(`
+    INSERT INTO wallets (userId, userRole, balance, frozenEscrow, updatedAt)
+    VALUES ('test-cust-tx-1', 'customer', 10000, 0, ${Date.now()})
+    ON CONFLICT(userId) DO UPDATE SET balance = 10000, frozenEscrow = 0;
+  `);
+
   // Test freeze transaction
   const freezeRes = server.EscrowService.freeze('test-ord-tx-1', 'test-cust-tx-1', 500);
   assert.strictEqual(freezeRes.success, true, 'freeze must succeed');
@@ -1678,6 +1685,31 @@ test('order.js and scan.js prompt guest registration upon direct page visits', (
 
   const scanJs = fs.readFileSync(path.join(DIR, 'scan.js'), 'utf8');
   assert.ok(scanJs.includes('!N3D.DB.user()') && scanJs.includes('loginModal'), 'scan.js must prompt registration for unauthenticated guests');
+});
+
+// ----------------------------------------------------
+// SUITE 32: Mobile Ergonomics & Viewport Overflow Protection
+// ----------------------------------------------------
+console.log('\n--- 32. Mobile Ergonomics & Viewport Overflow Protection ---');
+
+test('styles.css enforces overflow-x protection and fluid mobile layout', () => {
+  const css = fs.readFileSync(path.join(DIR, 'styles.css'), 'utf8');
+  assert.ok(css.includes('overflow-x: hidden;'), 'styles.css must prevent horizontal scroll overflow on html/body');
+  assert.ok(css.includes('.container { width: min(1200px, 92%); margin: 0 auto; box-sizing: border-box; }'), 'container must enforce box-sizing: border-box');
+  assert.ok(css.includes('.nav-mobile-logout'), 'styles.css must style mobile drawer logout');
+});
+
+test('styles.css mobile breakpoint hides secondary header clutter (logoutBtn, userchip text) and compacts userbox', () => {
+  const css = fs.readFileSync(path.join(DIR, 'styles.css'), 'utf8');
+  assert.ok(css.includes('#logoutBtn') && css.includes('display: none !important;'), 'logoutBtn must be hidden on mobile header row');
+  assert.ok(css.includes('.userchip span') || css.includes('.userchip-text'), 'userchip text must be hidden on mobile');
+  assert.ok(css.includes('.header__inner') && css.includes('height: 60px;'), 'header inner height must adapt on mobile');
+});
+
+test('core.js provides compact mobile header and mobile drawer logout option', () => {
+  const coreJs = fs.readFileSync(path.join(DIR, 'core.js'), 'utf8');
+  assert.ok(coreJs.includes('navMobileLogoutBtn'), 'core.js must render drawer logout button for mobile users');
+  assert.ok(coreJs.includes('header-logout-btn'), 'core.js must tag header logout button with responsive class');
 });
 
 // ----------------------------------------------------

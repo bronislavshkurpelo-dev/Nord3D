@@ -3250,7 +3250,9 @@
             const isMsg = k === "cabinet";
             const badge = isMsg ? `<span class="nav-msg-badge" id="navMsgBadge" style="${unread > 0 ? '' : 'display:none'}">${unread > 99 ? '99+' : unread}</span>` : "";
             return `<a href="${h}" class="${k === page ? "active" : ""}">${t}${badge}</a>`;
-          }).join("")}</nav>
+          }).join("")}
+          ${u ? `<button class="nav-mobile-logout" id="navMobileLogoutBtn">🚪 Выйти из аккаунта (${esc(u.name)})</button>` : ''}
+          </nav>
           <div class="userbox">
             <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">
               ${getTheme() === "dark" ? "☀️" : "🌙"}
@@ -3262,15 +3264,16 @@
               </a>
               <div class="userchip" id="headerUserChip" role="button" tabindex="0" title="Настройки профиля: ${esc(u.name)} (нажмите для редактирования)">
                 ${avatar(u, 32)}
-                <span><b>${esc(u.name)}</b><small>${u.role === "admin" ? "администратор" : (u.role === "printer" ? "мастер" : "заказчик")}</small></span>
+                <span class="userchip-text"><b>${esc(u.name)}</b><small>${u.role === "admin" ? "администратор" : (u.role === "printer" ? "мастер" : "заказчик")}</small></span>
               </div>
-              <button class="btn btn--ghost btn--small" id="logoutBtn">Выйти</button>`
+              <button class="btn btn--ghost btn--small header-logout-btn" id="logoutBtn">Выйти</button>`
               : `<button class="btn btn--small btn--primary" id="loginBtn">Войти</button>`}
             <button class="burger" id="burger" aria-label="Меню">☰</button>
           </div>
         </div>`;
       header.querySelector("#loginBtn")?.addEventListener("click", () => loginModal());
       header.querySelector("#logoutBtn")?.addEventListener("click", () => { DB.setUser(null); location.reload(); });
+      header.querySelector("#navMobileLogoutBtn")?.addEventListener("click", () => { DB.setUser(null); location.reload(); });
       header.querySelector("#headerUserChip")?.addEventListener("click", () => openProfileSettingsModal());
       header.querySelector("#headerUserChip")?.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
