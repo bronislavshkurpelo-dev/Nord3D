@@ -123,24 +123,41 @@
           const c = await cRes.value.json();
           if (c && typeof c === "object") {
             const localChats = DB.chats();
+            // Удаляем тестовые/призрачные треды и сообщения Hello
+            delete localChats["c79990001122__p79001112233__ord1"];
+            for (const k of Object.keys(localChats)) {
+              if (k.includes("ord1") || k.includes("sync_suite")) delete localChats[k];
+            }
+
             for (const [key, raw] of Object.entries(c)) {
-              const serverMsgs = Array.isArray(raw) ? raw : (Array.isArray(raw?.messages) ? raw.messages : []);
+              if (key.includes("ord1") || key.includes("sync_suite")) continue;
+              const serverMsgs = (Array.isArray(raw) ? raw : (Array.isArray(raw?.messages) ? raw.messages : []))
+                .filter(m => m && m.text !== "Hello");
+              const parts = key.split("__");
+              const custId = raw?.customerId || parts[0];
+              const printId = raw?.printerId || parts[1];
+              const ordId = raw?.orderId || (parts[2] !== "direct" ? parts[2] : null);
+              const custName = (raw?.customerName && raw.customerName !== "Заказчик") ? raw.customerName : resolveCustomerName(custId, ordId);
+              const printName = (raw?.printerName && raw.printerName !== "Мастер" && raw.printerName !== "Мастер 3D-печати") ? raw.printerName : resolvePrinterName(printId);
+
               let localThread = localChats[key];
               if (!localThread) {
-                const parts = key.split("__");
                 localThread = {
-                  customerId: raw.customerId || parts[0],
-                  printerId: raw.printerId || parts[1],
-                  orderId: raw.orderId || (parts[2] !== "direct" ? parts[2] : null),
-                  customerName: raw.customerName || "Заказчик",
+                  customerId: custId,
+                  customerName: custName,
+                  printerId: printId,
+                  printerName: printName,
+                  orderId: ordId,
                   messages: serverMsgs
                 };
               } else {
                 if (Array.isArray(localThread)) {
-                  const parts = key.split("__");
-                  localThread = { customerId: parts[0], printerId: parts[1], orderId: parts[2] !== "direct" ? parts[2] : null, messages: localThread };
+                  localThread = { customerId: custId, printerId: printId, orderId: ordId, messages: localThread };
                 }
+                localThread.customerName = custName;
+                localThread.printerName = printName;
                 if (!Array.isArray(localThread.messages)) localThread.messages = [];
+                localThread.messages = localThread.messages.filter(m => m && m.text !== "Hello");
                 const msgMap = new Map();
                 serverMsgs.forEach((m) => { if (m && m.id) msgMap.set(m.id, m); });
                 localThread.messages.forEach((m) => { if (m && m.id) msgMap.set(m.id, m); });
@@ -1250,22 +1267,58 @@
 
   if (localStorage.getItem(K.ver) !== DB_VERSION) DB.reset();
 
+  // ---------- Разрешение реальных имён для чатов ----------
+  function resolveCustomerName(customerId, orderId) {
+    if (!customerId) return "Сергей";
+    if (orderId) {
+      const o = DB.order(orderId);
+      if (o && o.customerName && o.customerName !== "Заказчик") return o.customerName;
+    }
+    const curU = DB.user();
+    if (curU && curU.id === customerId && curU.name && curU.name !== "Заказчик") return curU.name;
+    const anyOrder = DB.orders().find(x => x.customerId === customerId && x.customerName && x.customerName !== "Заказчик");
+    if (anyOrder) return anyOrder.customerName;
+    if (customerId === "c79990001122") return "Сергей";
+    if (customerId === "c79991112233") return "Ольга";
+    if (customerId === "c79992223344") return "Максим";
+    if (customerId === "c79993334455") return "Анна";
+    return "Сергей";
+  }
+
+  function resolvePrinterName(printerId) {
+    if (!printerId) return "Алексей К.";
+    const p = DB.printer(printerId);
+    if (p && p.name && p.name !== "Мастер" && p.name !== "Мастер 3D-печати") return p.name;
+    const curU = DB.user();
+    if (curU && curU.id === printerId && curU.name) return curU.name;
+    if (printerId === "p79001112233") return "Алексей К.";
+    if (printerId === "p79003334455") return "Дарья М.";
+    if (printerId === "p79002223344") return "Мастерская «Полярный слой»";
+    if (printerId === "p79004445566") return "Игорь С.";
+    if (printerId === "p79005556677") return "Тимур Р.";
+    return "Алексей К.";
+  }
+
   // ---------- Чат и диалоги ----------
   const Chat = {
     getThread(customerId, printerId, orderId) {
       const key = `${customerId}__${printerId}__${orderId || "direct"}`;
       const chats = DB.chats();
       let thread = chats[key];
+      const custName = resolveCustomerName(customerId, orderId);
+      const printName = resolvePrinterName(printerId);
+
       if (!thread) {
-        const cust = DB.order(orderId)?.customerName || "Заказчик";
-        thread = { orderId: orderId || null, customerId, customerName: cust, printerId, messages: [] };
+        thread = { orderId: orderId || null, customerId, customerName: custName, printerId, printerName: printName, messages: [] };
         chats[key] = thread;
         DB.saveChats(chats);
       } else if (Array.isArray(thread)) {
-        const cust = DB.order(orderId)?.customerName || "Заказчик";
-        thread = { orderId: orderId || null, customerId, customerName: cust, printerId, messages: thread };
+        thread = { orderId: orderId || null, customerId, customerName: custName, printerId, printerName: printName, messages: thread };
         chats[key] = thread;
         DB.saveChats(chats);
+      } else {
+        if (!thread.customerName || thread.customerName === "Заказчик") thread.customerName = custName;
+        if (!thread.printerName || thread.printerName === "Мастер" || thread.printerName === "Мастер 3D-печати") thread.printerName = printName;
       }
       if (!Array.isArray(thread.messages)) thread.messages = [];
       return { key, thread };
@@ -1295,25 +1348,30 @@
       const chats = DB.chats();
       const list = [];
       for (const [key, raw] of Object.entries(chats)) {
-        if (!raw) continue;
+        if (!raw || key.includes("ord1") || key.includes("sync_suite")) continue;
         const parts = key.split("__");
         const customerId = raw.customerId || parts[0];
         const printerId = raw.printerId || parts[1];
         const orderId = raw.orderId || (parts[2] !== "direct" ? parts[2] : null);
-        const messages = Array.isArray(raw) ? raw : (Array.isArray(raw.messages) ? raw.messages : []);
+        const messages = (Array.isArray(raw) ? raw : (Array.isArray(raw.messages) ? raw.messages : []))
+          .filter(m => m && m.text !== "Hello");
 
         if (customerId === userId || printerId === userId) {
+          const custName = (raw.customerName && raw.customerName !== "Заказчик") ? raw.customerName : resolveCustomerName(customerId, orderId);
+          const printName = (raw.printerName && raw.printerName !== "Мастер" && raw.printerName !== "Мастер 3D-печати") ? raw.printerName : resolvePrinterName(printerId);
           const order = orderId ? DB.order(orderId) : null;
-          const customerName = raw.customerName || (order ? order.customerName : "Заказчик");
-          const customerAvatar = raw.customerAvatar || (order ? order.customerAvatar : null);
+          const customerAvatar = raw.customerAvatar || order?.customerAvatar || null;
+          const printerAvatar = raw.printerAvatar || DB.printer(printerId)?.avatar || null;
           list.push({
             key,
             ...(typeof raw === "object" && !Array.isArray(raw) ? raw : {}),
             customerId,
             printerId,
             orderId,
-            customerName,
+            customerName: custName,
             customerAvatar,
+            printerName: printName,
+            printerAvatar,
             messages
           });
         }

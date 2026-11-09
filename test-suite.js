@@ -1760,6 +1760,17 @@ test('server.js supports atomic order and chat message persistence in SQLite', (
   assert.ok(Array.isArray(parsed.messages), 'Chat thread must have messages array');
   assert.strictEqual(parsed.messages.length, 1);
   assert.strictEqual(parsed.messages[0].text, 'Первое сообщение');
+  // Clean up test thread
+  server.sqlite.prepare("DELETE FROM chats WHERE threadKey = ?").run(testThreadKey);
+  server.sqlite.prepare("DELETE FROM orders WHERE id = ?").run(testOrderId);
+});
+
+test('Chat threads resolve real names and strip phantom test messages', () => {
+  const cabinetJs = fs.readFileSync(path.join(DIR, 'cabinet.js'), 'utf8');
+  const coreJs = fs.readFileSync(path.join(DIR, 'core.js'), 'utf8');
+  assert.ok(cabinetJs.includes('getOtherParty'), 'cabinet.js must use getOtherParty helper');
+  assert.ok(cabinetJs.includes('Hello'), 'cabinet.js must filter phantom test messages');
+  assert.ok(coreJs.includes('resolveCustomerName') && coreJs.includes('resolvePrinterName'), 'core.js must implement name resolution helpers');
 });
 
 // ----------------------------------------------------

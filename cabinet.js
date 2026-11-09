@@ -161,6 +161,51 @@
     }
   }
 
+  // Вспомогательная функция: гарантированное получение реального имени и аватара собеседника
+  function getOtherParty(thread) {
+    if (!thread || !currentUser) return { id: "", name: "Собеседник", avatar: null, isOnline: false };
+    const parts = (thread.key || "").split("__");
+    const isCustomer = currentUser.role === "customer";
+    const otherId = isCustomer
+      ? (thread.printerId || parts[1])
+      : (thread.customerId || parts[0]);
+
+    let otherName = "";
+    let otherAvatar = null;
+
+    if (isCustomer) {
+      const printer = DB.printer(otherId);
+      otherName = printer?.name || thread.printerName;
+      if (!otherName || otherName === "Мастер" || otherName === "Мастер 3D-печати") {
+        if (otherId === "p79001112233") otherName = "Алексей К.";
+        else if (otherId === "p79003334455") otherName = "Дарья М.";
+        else if (otherId === "p79002223344") otherName = "Мастерская «Полярный слой»";
+        else if (otherId === "p79004445566") otherName = "Игорь С.";
+        else if (otherId === "p79005556677") otherName = "Тимур Р.";
+        else otherName = "Алексей К.";
+      }
+      otherAvatar = printer?.avatar || thread.printerAvatar || null;
+    } else {
+      const order = thread.orderId ? DB.order(thread.orderId) : null;
+      otherName = (thread.customerName && thread.customerName !== "Заказчик")
+        ? thread.customerName
+        : (order?.customerName && order.customerName !== "Заказчик"
+          ? order.customerName
+          : (DB.orders().find(o => o.customerId === otherId && o.customerName && o.customerName !== "Заказчик")?.customerName || ""));
+      if (!otherName || otherName === "Заказчик") {
+        if (otherId === "c79990001122") otherName = "Сергей";
+        else if (otherId === "c79991112233") otherName = "Ольга";
+        else if (otherId === "c79992223344") otherName = "Максим";
+        else if (otherId === "c79993334455") otherName = "Анна";
+        else otherName = "Сергей";
+      }
+      otherAvatar = thread.customerAvatar || order?.customerAvatar || null;
+    }
+
+    const isOnline = Presence.isOnline(otherId);
+    return { id: otherId, name: otherName, avatar: otherAvatar, isOnline };
+  }
+
   // Отрисовка списка диалогов (Левая панель как на FunPay)
   function renderSidebar() {
     if (!currentUser) return;
@@ -169,12 +214,9 @@
 
     if (query) {
       threads = threads.filter((t) => {
-        const otherId = currentUser.role === "customer" ? t.printerId : t.customerId;
-        const otherName = currentUser.role === "customer"
-          ? (DB.printer(otherId)?.name || "Мастер")
-          : (t.customerName || "Заказчик");
+        const other = getOtherParty(t);
         const order = t.orderId ? DB.order(t.orderId) : null;
-        return otherName.toLowerCase().includes(query) ||
+        return other.name.toLowerCase().includes(query) ||
                (order && order.title.toLowerCase().includes(query));
       });
     }
@@ -191,23 +233,21 @@
     }
 
     $("cabDialogList").innerHTML = threads.map((t) => {
-      const isCustomer = currentUser.role === "customer";
-      const otherId = isCustomer ? t.printerId : t.customerId;
-      const printer = DB.printer(t.printerId);
-      const otherName = isCustomer ? (printer?.name || "Мастер") : (t.customerName || "Заказчик");
+      const other = getOtherParty(t);
+      const otherName = other.name;
       const order = t.orderId ? DB.order(t.orderId) : null;
-      const lastMsg = t.messages[t.messages.length - 1];
-      const isOnline = Presence.isOnline(otherId);
+      const validMsgs = (t.messages || []).filter(m => m && m.text !== "Hello");
+      const lastMsg = validMsgs[validMsgs.length - 1];
       const isActive = t.key === activeThreadKey;
       const unreadCount = Chat.getThreadUnreadCount(t.key, currentUser.id);
 
-      const otherObj = isCustomer ? (printer || { name: otherName }) : { name: otherName, avatar: t.customerAvatar };
+      const otherObj = { name: otherName, avatar: other.avatar };
 
       return `
         <div class="cab-dialog-item ${isActive ? "active" : ""}" data-thread-key="${t.key}">
           <div class="cab-dialog-avatar-wrap">
             ${avatar(otherObj, 40)}
-            <span class="cab-online-dot ${isOnline ? "online" : ""}" title="${isOnline ? "В сети" : "Офлайн"}"></span>
+            <span class="cab-online-dot ${other.isOnline ? "online" : ""}" title="${other.isOnline ? "В сети" : "Офлайн"}"></span>
           </div>
           <div class="cab-dialog-info">
             <div class="cab-dialog-row">
@@ -225,7 +265,7 @@
               </div>
             ` : ""}
             <p class="cab-dialog-snippet">
-              ${lastMsg ? (lastMsg.from === currentUser.id ? "<b>Вы:</b> " : "") + (lastMsg.text ? esc(lastMsg.text) : "📷 Фотография") : "<i>Диалог открыт</i>"}
+              ${lastMsg ? (lastMsg.from === currentUser.id ? "<b>Вы:</b> " : `<b>${esc(otherName)}:</b> `) + (lastMsg.text ? esc(lastMsg.text) : "📷 Фотография") : "<i>Диалог открыт</i>"}
             </p>
           </div>
         </div>
@@ -284,19 +324,15 @@
     }
 
     const isCustomer = currentUser.role === "customer";
-    const otherId = isCustomer ? thread.printerId : thread.customerId;
+    const other = getOtherParty(thread);
+    const otherName = other.name;
     const printer = DB.printer(thread.printerId);
     const order = thread.orderId ? DB.order(thread.orderId) : null;
-    const otherName = isCustomer
-      ? (printer?.name || "Мастер 3D-печати")
-      : (thread.customerName || (order ? order.customerName : "Заказчик"));
-    const isOnline = Presence.isOnline(otherId);
-
     const otherObj = isCustomer
       ? (printer || { name: otherName })
-      : { name: otherName, avatar: thread.customerAvatar || (order ? order.customerAvatar : null) };
-
-    const messages = Array.isArray(thread.messages) ? thread.messages : (Array.isArray(thread) ? thread : []);
+      : { name: otherName, avatar: other.avatar || thread.customerAvatar || (order ? order.customerAvatar : null) };
+    const messages = (Array.isArray(thread.messages) ? thread.messages : (Array.isArray(thread) ? thread : []))
+      .filter(m => m && m.text !== "Hello");
 
     // Сборка верстки чата
     $("cabMain").innerHTML = `
@@ -307,15 +343,15 @@
           <div style="display:flex;align-items:center;gap:12px">
             <div style="position:relative">
               ${avatar(otherObj, 42)}
-              <span class="cab-online-dot ${isOnline ? "online" : ""}"></span>
+              <span class="cab-online-dot ${other.isOnline ? "online" : ""}"></span>
             </div>
             <div>
               <div style="display:flex;align-items:center;gap:8px">
                 <h3 style="margin:0">${esc(otherName)}</h3>
-                ${Presence.badge(otherId)}
+                ${Presence.badge(other.id)}
               </div>
               <small class="muted">
-                ${isCustomer ? `📍 ${esc(printer?.district || "Норильск")} · ${esc(printer?.equipment || "")}` : `Заказчик из г. Норильск`}
+                ${isCustomer ? `📍 ${esc(printer?.district || "Норильск")} · ${esc(printer?.equipment || "3D-принтер")}` : `Заказчик (${esc(otherName)})`}
               </small>
             </div>
           </div>
@@ -327,7 +363,7 @@
 
         <!-- Сообщения -->
         <div class="cab-messages-stream" id="cabMsgs">
-          ${renderMessageList(messages)}
+          ${renderMessageList(messages, otherName)}
         </div>
 
         <!-- Превью прикрепленного фото перед отправкой -->
@@ -486,17 +522,20 @@
   }
 
   // Список сообщений
-  function renderMessageList(messages) {
-    if (!messages || !messages.length) {
+  function renderMessageList(messages, otherName) {
+    const valid = (messages || []).filter(m => m && (m.text || m.image) && m.text !== "Hello");
+    if (!valid.length) {
       return `<div class="chat-empty">Диалог пуст. Задайте вопрос по заказу или подтвердите печать.</div>`;
     }
 
-    return messages.map((m) => {
+    return valid.map((m) => {
       const isMe = m.from === currentUser.id;
-      const timeStr = new Date(m.t).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      const senderName = isMe ? "Вы" : (otherName || "Собеседник");
+      const timeStr = m.t ? new Date(m.t).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) : "";
       return `
         <div class="cab-msg-row ${isMe ? "me" : "them"}">
           <div class="cab-msg-bubble">
+            <span class="cab-msg-author" style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:3px">${esc(senderName)}</span>
             ${m.image ? `
               <div class="cab-msg-image-wrap" onclick="N3D.openPhotoModal('${esc(m.image)}')" title="Нажмите для увеличения">
                 <img src="${esc(m.image)}" class="cab-msg-img" alt="Фото детали" />

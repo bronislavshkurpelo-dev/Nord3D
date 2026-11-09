@@ -898,25 +898,71 @@ const server = http.createServer(async (req, res) => {
     return jsonResponse(res, 200, { success: true });
   }
 
+// Helper: разрешение имён пользователей для чатов
+function resolveUserName(userId, defaultRole = 'customer') {
+  if (!userId) return defaultRole === 'printer' ? 'Алексей К.' : 'Сергей';
+  try {
+    const u = sqlite.prepare("SELECT name FROM users WHERE id = ?").get(userId);
+    if (u && u.name) return u.name;
+    const p = sqlite.prepare("SELECT json FROM printers WHERE id = ?").get(userId);
+    if (p && p.json) {
+      const pObj = JSON.parse(p.json);
+      if (pObj.name) return pObj.name;
+    }
+    const o = sqlite.prepare("SELECT json FROM orders WHERE customerId = ?").get(userId);
+    if (o && o.json) {
+      const oObj = JSON.parse(o.json);
+      if (oObj.customerName) return oObj.customerName;
+    }
+  } catch {}
+  if (userId === 'c79990001122') return 'Сергей';
+  if (userId === 'c79991112233') return 'Ольга';
+  if (userId === 'c79992223344') return 'Максим';
+  if (userId === 'c79993334455') return 'Анна';
+  if (userId === 'p79001112233') return 'Алексей К.';
+  if (userId === 'p79003334455') return 'Дарья М.';
+  if (userId === 'p79002223344') return 'Мастерская «Полярный слой»';
+  if (userId === 'p79004445566') return 'Игорь С.';
+  if (userId === 'p79005556677') return 'Тимур Р.';
+  return defaultRole === 'printer' ? 'Алексей К.' : 'Сергей';
+}
+
   // 8. Чаты и сообщения (/api/chats)
   if (pathname === '/api/chats' && req.method === 'GET') {
     const rows = sqlite.prepare("SELECT threadKey, json FROM chats").all();
     const chats = {};
     for (const r of rows) {
+      if (r.threadKey.includes('ord1') || r.threadKey.includes('sync_suite')) continue;
       try {
         const parsed = JSON.parse(r.json);
+        const parts = r.threadKey.split('__');
+        const custId = parts[0];
+        const printId = parts[1];
+        const ordId = parts[2] !== 'direct' ? parts[2] : null;
+
+        let threadObj;
         if (Array.isArray(parsed)) {
-          const parts = r.threadKey.split('__');
-          chats[r.threadKey] = {
-            customerId: parts[0],
-            printerId: parts[1],
-            orderId: parts[2] !== 'direct' ? parts[2] : null,
-            customerName: 'Заказчик',
-            messages: parsed
+          threadObj = {
+            customerId: custId,
+            customerName: resolveUserName(custId, 'customer'),
+            printerId: printId,
+            printerName: resolveUserName(printId, 'printer'),
+            orderId: ordId,
+            messages: parsed.filter(m => m && m.text !== 'Hello')
           };
         } else {
-          chats[r.threadKey] = parsed;
+          threadObj = parsed;
+          if (!threadObj.customerName || threadObj.customerName === 'Заказчик') {
+            threadObj.customerName = resolveUserName(custId, 'customer');
+          }
+          if (!threadObj.printerName || threadObj.printerName === 'Мастер' || threadObj.printerName === 'Мастер 3D-печати') {
+            threadObj.printerName = resolveUserName(printId, 'printer');
+          }
+          if (Array.isArray(threadObj.messages)) {
+            threadObj.messages = threadObj.messages.filter(m => m && m.text !== 'Hello');
+          }
         }
+        chats[r.threadKey] = threadObj;
       } catch {
         chats[r.threadKey] = { messages: [] };
       }
@@ -932,18 +978,23 @@ const server = http.createServer(async (req, res) => {
       if (!msg.t) msg.t = Date.now();
       if (!msg.time) msg.time = msg.t;
 
+      const parts = threadKey.split('__');
+      const custId = parts[0];
+      const printId = parts[1];
+      const ordId = parts[2] !== 'direct' ? parts[2] : null;
+
       const row = sqlite.prepare("SELECT json FROM chats WHERE threadKey = ?").get(threadKey);
       let threadObj;
       if (row) {
         try {
           const parsed = JSON.parse(row.json);
           if (Array.isArray(parsed)) {
-            const parts = threadKey.split('__');
             threadObj = {
-              customerId: parts[0],
-              printerId: parts[1],
-              orderId: parts[2] !== 'direct' ? parts[2] : null,
-              customerName: 'Заказчик',
+              customerId: custId,
+              customerName: resolveUserName(custId, 'customer'),
+              printerId: printId,
+              printerName: resolveUserName(printId, 'printer'),
+              orderId: ordId,
               messages: parsed
             };
           } else {
@@ -953,14 +1004,20 @@ const server = http.createServer(async (req, res) => {
           threadObj = { messages: [] };
         }
       } else {
-        const parts = threadKey.split('__');
         threadObj = {
-          customerId: parts[0],
-          printerId: parts[1],
-          orderId: parts[2] !== 'direct' ? parts[2] : null,
-          customerName: 'Заказчик',
+          customerId: custId,
+          customerName: resolveUserName(custId, 'customer'),
+          printerId: printId,
+          printerName: resolveUserName(printId, 'printer'),
+          orderId: ordId,
           messages: []
         };
+      }
+      if (!threadObj.customerName || threadObj.customerName === 'Заказчик') {
+        threadObj.customerName = resolveUserName(custId, 'customer');
+      }
+      if (!threadObj.printerName || threadObj.printerName === 'Мастер' || threadObj.printerName === 'Мастер 3D-печати') {
+        threadObj.printerName = resolveUserName(printId, 'printer');
       }
       if (!Array.isArray(threadObj.messages)) threadObj.messages = [];
       if (!threadObj.messages.some(m => m.id === msg.id)) {
