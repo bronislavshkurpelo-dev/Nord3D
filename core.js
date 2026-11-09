@@ -69,14 +69,16 @@
   const apiSync = {
     enabled: typeof window !== "undefined" && window.location && window.location.protocol.startsWith("http"),
     push(endpoint, data) {
-      if (!this.enabled) return;
+      if (!this.enabled) return Promise.resolve(null);
       try {
-        fetch(`/api/${endpoint}`, {
+        return fetch(`/api/${endpoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
-        }).catch(() => {});
-      } catch {}
+        }).then(r => r.ok ? r.json() : null).catch(() => null);
+      } catch {
+        return Promise.resolve(null);
+      }
     },
     async pull() {
       if (!this.enabled) return;
@@ -92,11 +94,63 @@
         }
         if (oRes.status === "fulfilled" && oRes.value.ok) {
           const o = await oRes.value.json();
-          if (Array.isArray(o) && o.length) { save(K.orders, o); window.dispatchEvent(new CustomEvent("n3d:data-updated")); }
+          if (Array.isArray(o)) {
+            const localOrders = DB.orders();
+            const orderMap = new Map();
+            o.forEach((item) => { if (item && item.id) orderMap.set(item.id, item); });
+            localOrders.forEach((item) => {
+              if (!item || !item.id) return;
+              const serverItem = orderMap.get(item.id);
+              if (!serverItem) {
+                orderMap.set(item.id, item);
+                apiSync.push("orders", item);
+              } else {
+                const localTime = item.updatedAt || item.createdAt || 0;
+                const serverTime = serverItem.updatedAt || serverItem.createdAt || 0;
+                if (localTime > serverTime) {
+                  orderMap.set(item.id, item);
+                  apiSync.push("orders", item);
+                }
+              }
+            });
+            const merged = Array.from(orderMap.values());
+            merged.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            save(K.orders, merged);
+            window.dispatchEvent(new CustomEvent("n3d:data-updated"));
+          }
         }
         if (cRes.status === "fulfilled" && cRes.value.ok) {
           const c = await cRes.value.json();
-          if (c && typeof c === "object") { save(K.chats, c); window.dispatchEvent(new CustomEvent("n3d:chat-updated")); }
+          if (c && typeof c === "object") {
+            const localChats = DB.chats();
+            for (const [key, raw] of Object.entries(c)) {
+              const serverMsgs = Array.isArray(raw) ? raw : (Array.isArray(raw?.messages) ? raw.messages : []);
+              let localThread = localChats[key];
+              if (!localThread) {
+                const parts = key.split("__");
+                localThread = {
+                  customerId: raw.customerId || parts[0],
+                  printerId: raw.printerId || parts[1],
+                  orderId: raw.orderId || (parts[2] !== "direct" ? parts[2] : null),
+                  customerName: raw.customerName || "Заказчик",
+                  messages: serverMsgs
+                };
+              } else {
+                if (Array.isArray(localThread)) {
+                  const parts = key.split("__");
+                  localThread = { customerId: parts[0], printerId: parts[1], orderId: parts[2] !== "direct" ? parts[2] : null, messages: localThread };
+                }
+                if (!Array.isArray(localThread.messages)) localThread.messages = [];
+                const msgMap = new Map();
+                serverMsgs.forEach((m) => { if (m && m.id) msgMap.set(m.id, m); });
+                localThread.messages.forEach((m) => { if (m && m.id) msgMap.set(m.id, m); });
+                localThread.messages = Array.from(msgMap.values()).sort((a, b) => (a.t || a.time || 0) - (b.t || b.time || 0));
+              }
+              localChats[key] = localThread;
+            }
+            save(K.chats, localChats);
+            window.dispatchEvent(new CustomEvent("n3d:chat-updated"));
+          }
         }
       } catch {}
     },
@@ -128,9 +182,30 @@
           try {
             const { threadKey, message } = JSON.parse(e.data);
             const chats = DB.chats();
-            chats[threadKey] = chats[threadKey] || [];
-            if (!chats[threadKey].some((m) => m.id === message.id)) {
-              chats[threadKey].push(message);
+            let thread = chats[threadKey];
+            if (!thread) {
+              const parts = threadKey.split("__");
+              thread = {
+                customerId: parts[0],
+                printerId: parts[1],
+                orderId: parts[2] !== "direct" ? parts[2] : null,
+                customerName: "Заказчик",
+                messages: []
+              };
+            } else if (Array.isArray(thread)) {
+              const parts = threadKey.split("__");
+              thread = {
+                customerId: parts[0],
+                printerId: parts[1],
+                orderId: parts[2] !== "direct" ? parts[2] : null,
+                customerName: "Заказчик",
+                messages: thread
+              };
+            }
+            if (!Array.isArray(thread.messages)) thread.messages = [];
+            if (!thread.messages.some((m) => m.id === message.id)) {
+              thread.messages.push(message);
+              chats[threadKey] = thread;
               save(K.chats, chats);
               window.dispatchEvent(new CustomEvent("n3d:chat-updated"));
             }
@@ -149,10 +224,26 @@
       window.dispatchEvent(new CustomEvent("n3d:data-updated"));
       if (Array.isArray(v)) v.forEach((p) => apiSync.push("printers", p));
     },
-    saveOrders: (v) => {
+    addOrder(order) {
+      if (!order.id) order.id = "o" + uid();
+      if (!order.createdAt) order.createdAt = Date.now();
+      if (!order.updatedAt) order.updatedAt = Date.now();
+      const list = DB.orders();
+      const idx = list.findIndex((x) => x.id === order.id);
+      if (idx >= 0) list[idx] = order; else list.unshift(order);
+      save(K.orders, list);
+      window.dispatchEvent(new CustomEvent("n3d:data-updated"));
+      apiSync.push("orders", order);
+      return order;
+    },
+    saveOrders: (v, modifiedItem) => {
       save(K.orders, v);
       window.dispatchEvent(new CustomEvent("n3d:data-updated"));
-      if (Array.isArray(v) && v[0]) apiSync.push("orders", v[0]);
+      if (modifiedItem) {
+        apiSync.push("orders", modifiedItem);
+      } else if (Array.isArray(v) && v.length) {
+        v.slice(0, 5).forEach((item) => apiSync.push("orders", item));
+      }
     },
     saveChats: (v) => {
       save(K.chats, v);
@@ -177,7 +268,10 @@
       if (o) {
         if (typeof fn === "function") fn(o);
         else if (typeof idOrObj === "object") Object.assign(o, idOrObj);
-        DB.saveOrders(l);
+        o.updatedAt = Date.now();
+        save(K.orders, l);
+        window.dispatchEvent(new CustomEvent("n3d:data-updated"));
+        apiSync.push("orders", o);
       }
       return o;
     },
@@ -1161,17 +1255,25 @@
     getThread(customerId, printerId, orderId) {
       const key = `${customerId}__${printerId}__${orderId || "direct"}`;
       const chats = DB.chats();
-      if (!chats[key]) {
+      let thread = chats[key];
+      if (!thread) {
         const cust = DB.order(orderId)?.customerName || "Заказчик";
-        chats[key] = { orderId: orderId || null, customerId, customerName: cust, printerId, messages: [] };
+        thread = { orderId: orderId || null, customerId, customerName: cust, printerId, messages: [] };
+        chats[key] = thread;
+        DB.saveChats(chats);
+      } else if (Array.isArray(thread)) {
+        const cust = DB.order(orderId)?.customerName || "Заказчик";
+        thread = { orderId: orderId || null, customerId, customerName: cust, printerId, messages: thread };
+        chats[key] = thread;
         DB.saveChats(chats);
       }
-      return { key, thread: chats[key] };
+      if (!Array.isArray(thread.messages)) thread.messages = [];
+      return { key, thread };
     },
     sendMessage(customerId, printerId, orderId, text, image = null) {
       const user = DB.user();
       const cleanText = (text || "").trim();
-      if (!user || (!cleanText && !image)) return;
+      if (!user || (!cleanText && !image)) return null;
       const { key, thread } = Chat.getThread(customerId, printerId, orderId);
       const newMsg = {
         id: "m_" + uid(),
@@ -1180,7 +1282,9 @@
         image: image || null,
         t: Date.now()
       };
+      if (!Array.isArray(thread.messages)) thread.messages = [];
       thread.messages.push(newMsg);
+      thread.updatedAt = Date.now();
       const chats = DB.chats();
       chats[key] = thread;
       DB.saveChats(chats);

@@ -863,8 +863,9 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         if (!body.id) body.id = 'ord-' + Date.now().toString(36);
         sqlite.prepare("INSERT OR REPLACE INTO orders (id, status, budget, printerId, customerId, json, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-          .run(body.id, body.status || 'open', Number(body.budget) || 0, body.printerId || null, body.customer?.id || null, JSON.stringify(body), body.createdAt || Date.now(), Date.now());
+          .run(body.id, body.status || 'open', Number(body.budget) || 0, body.printerId || null, body.customerId || body.customer?.id || null, JSON.stringify(body), body.createdAt || Date.now(), Date.now());
         broadcast('order_updated', body);
+        broadcastWs({ type: 'order_updated', order: body });
         return jsonResponse(res, 200, body);
       } catch (e) {
         return jsonResponse(res, 400, { error: e.message });
@@ -880,8 +881,9 @@ const server = http.createServer(async (req, res) => {
       const body = await parseBody(req);
       const updated = Object.assign(JSON.parse(row.json), body);
       sqlite.prepare("UPDATE orders SET status = ?, budget = ?, printerId = ?, customerId = ?, json = ?, updatedAt = ? WHERE id = ?")
-        .run(updated.status || 'open', Number(updated.budget) || 0, updated.printerId || null, updated.customer?.id || null, JSON.stringify(updated), Date.now(), orderId);
+        .run(updated.status || 'open', Number(updated.budget) || 0, updated.printerId || null, updated.customerId || updated.customer?.id || null, JSON.stringify(updated), Date.now(), orderId);
       broadcast('order_updated', updated);
+      broadcastWs({ type: 'order_updated', order: updated });
       return jsonResponse(res, 200, updated);
     } catch (e) {
       return jsonResponse(res, 400, { error: e.message });
@@ -892,6 +894,7 @@ const server = http.createServer(async (req, res) => {
     const orderId = decodeURIComponent(pathname.replace('/api/orders/', ''));
     sqlite.prepare("DELETE FROM orders WHERE id = ?").run(orderId);
     broadcast('order_deleted', { id: orderId });
+    broadcastWs({ type: 'order_deleted', id: orderId });
     return jsonResponse(res, 200, { success: true });
   }
 
@@ -899,7 +902,25 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/chats' && req.method === 'GET') {
     const rows = sqlite.prepare("SELECT threadKey, json FROM chats").all();
     const chats = {};
-    for (const r of rows) chats[r.threadKey] = JSON.parse(r.json);
+    for (const r of rows) {
+      try {
+        const parsed = JSON.parse(r.json);
+        if (Array.isArray(parsed)) {
+          const parts = r.threadKey.split('__');
+          chats[r.threadKey] = {
+            customerId: parts[0],
+            printerId: parts[1],
+            orderId: parts[2] !== 'direct' ? parts[2] : null,
+            customerName: 'Заказчик',
+            messages: parsed
+          };
+        } else {
+          chats[r.threadKey] = parsed;
+        }
+      } catch {
+        chats[r.threadKey] = { messages: [] };
+      }
+    }
     return jsonResponse(res, 200, chats);
   }
 
@@ -908,14 +929,47 @@ const server = http.createServer(async (req, res) => {
     try {
       const msg = await parseBody(req);
       if (!msg.id) msg.id = 'm_' + Date.now().toString(36);
-      if (!msg.time) msg.time = Date.now();
+      if (!msg.t) msg.t = Date.now();
+      if (!msg.time) msg.time = msg.t;
 
       const row = sqlite.prepare("SELECT json FROM chats WHERE threadKey = ?").get(threadKey);
-      const list = row ? JSON.parse(row.json) : [];
-      list.push(msg);
+      let threadObj;
+      if (row) {
+        try {
+          const parsed = JSON.parse(row.json);
+          if (Array.isArray(parsed)) {
+            const parts = threadKey.split('__');
+            threadObj = {
+              customerId: parts[0],
+              printerId: parts[1],
+              orderId: parts[2] !== 'direct' ? parts[2] : null,
+              customerName: 'Заказчик',
+              messages: parsed
+            };
+          } else {
+            threadObj = parsed;
+          }
+        } catch {
+          threadObj = { messages: [] };
+        }
+      } else {
+        const parts = threadKey.split('__');
+        threadObj = {
+          customerId: parts[0],
+          printerId: parts[1],
+          orderId: parts[2] !== 'direct' ? parts[2] : null,
+          customerName: 'Заказчик',
+          messages: []
+        };
+      }
+      if (!Array.isArray(threadObj.messages)) threadObj.messages = [];
+      if (!threadObj.messages.some(m => m.id === msg.id)) {
+        threadObj.messages.push(msg);
+      }
+      threadObj.updatedAt = Date.now();
 
       sqlite.prepare("INSERT OR REPLACE INTO chats (threadKey, json, updatedAt) VALUES (?, ?, ?)")
-        .run(threadKey, JSON.stringify(list), Date.now());
+        .run(threadKey, JSON.stringify(threadObj), Date.now());
 
       broadcast('chat_message', { threadKey, message: msg });
       broadcastWs({ type: 'chat_message', threadKey, message: msg });

@@ -1721,6 +1721,48 @@ test('Mobile navigation drawer is fixed and header has overflow:visible to guara
 });
 
 // ----------------------------------------------------
+// SUITE 33: Backend Order and Chat Real-Time Sync & Reconciliation
+// ----------------------------------------------------
+console.log('\n--- 33. Backend Order and Chat Real-Time Sync & Reconciliation ---');
+
+test('core.js implements DB.addOrder and resilient apiSync reconciliation', () => {
+  const coreJs = fs.readFileSync(path.join(DIR, 'core.js'), 'utf8');
+  assert.ok(coreJs.includes('addOrder(order)'), 'core.js must provide DB.addOrder helper');
+  assert.ok(coreJs.includes('apiSync.push("orders", order)'), 'DB.addOrder must sync order to backend');
+  assert.ok(coreJs.includes('orderMap'), 'apiSync.pull must reconcile local and server orders without deleting local orders');
+});
+
+test('server.js supports atomic order and chat message persistence in SQLite', () => {
+  const server = require(path.join(DIR, 'server.js'));
+  const testOrderId = 'ord_sync_suite_' + Date.now().toString(36);
+  const testThreadKey = 'cust_sync_1__print_sync_1__' + testOrderId;
+
+  // Insert order
+  server.sqlite.prepare("INSERT OR REPLACE INTO orders (id, status, budget, customerId, json, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)")
+    .run(testOrderId, 'open', 2500, 'cust_sync_1', JSON.stringify({ id: testOrderId, title: 'Test Part' }), Date.now(), Date.now());
+
+  const fetchedOrder = server.sqlite.prepare("SELECT json FROM orders WHERE id = ?").get(testOrderId);
+  assert.ok(fetchedOrder, 'Order must be saved in orders table');
+  assert.strictEqual(JSON.parse(fetchedOrder.json).id, testOrderId);
+
+  // Insert chat thread and verify message appending
+  const threadObj = {
+    customerId: 'cust_sync_1',
+    printerId: 'print_sync_1',
+    orderId: testOrderId,
+    messages: [{ id: 'm1', text: 'Первое сообщение', t: Date.now() }]
+  };
+  server.sqlite.prepare("INSERT OR REPLACE INTO chats (threadKey, json, updatedAt) VALUES (?, ?, ?)")
+    .run(testThreadKey, JSON.stringify(threadObj), Date.now());
+
+  const row = server.sqlite.prepare("SELECT json FROM chats WHERE threadKey = ?").get(testThreadKey);
+  const parsed = JSON.parse(row.json);
+  assert.ok(Array.isArray(parsed.messages), 'Chat thread must have messages array');
+  assert.strictEqual(parsed.messages.length, 1);
+  assert.strictEqual(parsed.messages[0].text, 'Первое сообщение');
+});
+
+// ----------------------------------------------------
 // SUMMARY
 // ----------------------------------------------------
 console.log('\n====================================================');

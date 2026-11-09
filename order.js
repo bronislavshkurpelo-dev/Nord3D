@@ -314,11 +314,9 @@
         invitedId: invited ? invited.id : null,
         createdAt: Date.now(),
       };
-      const list = DB.orders();
-      list.push(order);
-      DB.saveOrders(list);
+      DB.addOrder(order);
       toast("Заказ опубликован на бирже!");
-      setTimeout(() => (location.href = "orders.html?id=" + order.id), 500);
+      setTimeout(() => (location.href = "my-orders.html?id=" + order.id), 500);
     });
   });
 })();

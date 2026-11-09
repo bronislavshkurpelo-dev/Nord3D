@@ -24,49 +24,10 @@
 
   function render() {
     const curU = DB.user();
-    const canSeeOrders = curU && (curU.role === "printer" || curU.role === "admin");
     const toolbar = document.querySelector(".toolbar");
     const listEl = $("list");
     const emptyEl = $("empty");
-    const gateEl = $("ordersGate");
 
-    if (!canSeeOrders) {
-      if (toolbar) toolbar.style.display = "none";
-      if (listEl) listEl.style.display = "none";
-      if (emptyEl) emptyEl.style.display = "none";
-
-      if (!gateEl) {
-        const container = document.querySelector(".section.section--tight .container");
-        if (container) {
-          const div = document.createElement("div");
-          div.id = "ordersGate";
-          div.innerHTML = `
-            <div style="text-align:center;padding:50px 24px;max-width:540px;margin:20px auto;background:var(--bg-card);border:1.5px solid var(--border);border-radius:24px;box-shadow:var(--shadow-md)">
-              <div style="font-size:44px;margin-bottom:14px">🖨️</div>
-              <h2 style="font-size:24px;margin-bottom:10px">Лента актуальных заказов</h2>
-              <p class="muted" style="font-size:15px;line-height:1.55;margin-bottom:24px">
-                Раздел предназначен для исполнителей 3D-печати. Здесь мастера Норильска берут заказы в работу и отправляют отклики.
-                ${curU ? `<br><br>Вы вошли как <b>заказчик</b> (${esc(curU.name)}). Вы можете отслеживать свои заявки в разделе «Мои заказы» или разместить новую деталь.` : ''}
-              </p>
-              <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                ${curU ? `
-                  <a href="order.html" class="btn btn--primary">Разместить заказ</a>
-                  <a href="my-orders.html" class="btn btn--ghost">📋 Мои заказы</a>
-                ` : `
-                  <button class="btn btn--primary" id="btnOrdersLoginPrinter">Войти как исполнитель</button>
-                  <a href="order.html" class="btn btn--ghost">Разместить заказ</a>
-                `}
-              </div>
-            </div>
-          `;
-          container.appendChild(div);
-          div.querySelector("#btnOrdersLoginPrinter")?.addEventListener("click", () => loginModal("printer"));
-        }
-      }
-      return;
-    }
-
-    if (gateEl) gateEl.remove();
     if (toolbar) toolbar.style.display = "";
     if (listEl) listEl.style.display = "";
     document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));

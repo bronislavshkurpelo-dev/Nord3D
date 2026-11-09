@@ -338,13 +338,11 @@
           createdAt: Date.now()
         };
 
-        const list = DB.orders();
-        list.push(order);
-        DB.saveOrders(list);
+        DB.addOrder(order);
 
         toast("Заказ на 3D-сканирование успешно опубликован!");
         setTimeout(() => {
-          location.href = "orders.html?id=" + order.id;
+          location.href = "my-orders.html?id=" + order.id;
         }, 500);
       });
     });
