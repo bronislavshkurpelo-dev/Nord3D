@@ -1,0 +1,22 @@
+{
+  "name": "nord3d-norilsk",
+  "version": "1.0.0",
+  "description": "Платформа прямой связи заказчиков и мастеров 3D-печати и 3D-сканирования в Норильске",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'Zero dependencies: ready to start'",
+    "test": "node test-suite.js"
+  },
+  "keywords": [
+    "3d-printing",
+    "3d-scanning",
+    "norilsk",
+    "manufacturing"
+  ],
+  "author": "NORD 3D Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

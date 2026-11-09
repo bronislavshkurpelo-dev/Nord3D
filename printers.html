@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мастера 3D-печати Норильска — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="printers">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader" class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">NORD<span>3D</span></a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="order.html">Разместить заказ</a>
+        <a href="printers.html" class="active">Исполнители</a>
+      </nav>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">🌙</button>
+        <button class="btn btn--small btn--primary" id="loginBtn">Войти</button>
+        <button class="burger" id="burger" aria-label="Меню">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-banner">
+    <div class="container">
+      <h1>Мастера 3D-печати в Норильске</h1>
+      <p>Проверенные частные специалисты и студии печати во всех районах города. Зелёный индикатор показывает, кто сейчас онлайн.</p>
+    </div>
+  </section>
+
+  <main class="section section--tight">
+    <div class="container">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="fDistrict"><option value="">Все районы</option></select>
+          <select id="fTech">
+            <option value="">Все направления</option>
+            <option value="fdm">FDM печать</option>
+            <option value="sla">SLA смола</option>
+            <option value="scan">🔬 3D-сканирование</option>
+          </select>
+          <select id="fMaterial">
+            <option value="">Любой материал</option>
+            <option value="PLA">PLA</option>
+            <option value="PETG">PETG</option>
+            <option value="ABS">ABS</option>
+            <option value="TPU">TPU (гибкий)</option>
+            <option value="RESIN">Фотополимер</option>
+            <option value="NYLON">⭐ Nylon (PA12)</option>
+            <option value="CARBON">⭐ Carbon (PA-CF)</option>
+            <option value="PC">⭐ Поликарбонат (PC)</option>
+            <option value="ASA">⭐ ASA (УФ-стойкий)</option>
+          </select>
+          <select id="fSort">
+            <option value="rating">По рейтингу</option>
+            <option value="price">Дешевле за грамм</option>
+            <option value="done">Больше заказов</option>
+          </select>
+        </div>
+        <span class="muted" id="count"></span>
+      </div>
+
+      <div class="printer-grid" id="list"></div>
+    </div>
+  </main>
+
+    <section id="join" class="join">
+    <div class="container join__inner">
+      <div class="join__image-wrap">
+        <img src="img/workshop.jpg" alt="Мастерская 3D-печати в Норильске" loading="lazy" />
+      </div>
+      <div class="join__content">
+        <span class="tag tag--primary">Для исполнителей</span>
+        <h2>Печатаете в Норильске? Получайте заказы без посредников</h2>
+        <ul class="ticks">
+          <li>Бесплатное размещение в каталоге и доступ к ленте заказов</li>
+          <li>Встроенный чат с заказчиком — уточняйте детали прямо на сайте</li>
+          <li>Индикатор «В сети» привлекает горячих клиентов</li>
+          <li>Вы сами назначаете цены и выбираете удобные заказы</li>
+        </ul>
+        <button class="btn btn--primary" id="joinBtn">Зарегистрироваться мастером</button>
+      </div>
+    </div>
+  </section>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script>
+    (() => {
+      const { DB, DISTRICTS, loginModal } = N3D;
+      const $ = (id) => document.getElementById(id);
+      $("fDistrict").innerHTML += DISTRICTS.map((d) => `<option>${d}</option>`).join("");
+
+      function render() {
+        let list = DB.printers();
+        if ($("fDistrict").value) list = list.filter((p) => p.district === $("fDistrict").value);
+        if ($("fTech").value) {
+          const t = $("fTech").value;
+          list = list.filter((p) => (p.tech || ["fdm"]).includes(t) || (t === "scan" && (p.services?.includes("scanning") || !!p.scannerEquipment)));
+        }
+        if ($("fMaterial").value) {
+          const m = $("fMaterial").value;
+          list = list.filter((p) => (p.materials || []).includes(m) || (p.specMaterials || []).includes(m) || p.customMatName === m);
+        }
+        const s = $("fSort").value;
+        list.sort((a, b) => s === "price" ? a.pricePerGram - b.pricePerGram : s === "done" ? b.done - a.done : b.rating - a.rating || b.reviews - a.reviews);
+        $("list").innerHTML = list.map(N3DCards.printer).join("") || '<p class="muted">Мастеров по выбранным критериям не найдено.</p>';
+        $("count").textContent = `Найдено мастеров: ${list.length}`;
+      }
+      ["fDistrict", "fTech", "fMaterial", "fSort"].forEach((id) => $(id).addEventListener("change", render));
+      render();
+
+      const u = DB.user();
+      const joinBtn = $("joinBtn");
+      if (joinBtn) {
+        if (u && u.role === "printer") {
+          joinBtn.textContent = "⚙️ Настройки профиля мастера";
+          joinBtn.onclick = () => N3D.openProfileSettingsModal();
+        } else {
+          joinBtn.onclick = () => loginModal("printer");
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
+

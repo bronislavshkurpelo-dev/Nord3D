@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рейтинг и репутация мастера — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="rating">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader"></header>
+
+  <main class="rating-page">
+    <div class="container">
+
+      <!-- Заголовок страницы и выбор мастера -->
+      <div class="wallet-header-block">
+        <div>
+          <div class="page-badge">⭐ Репутация исполнителя NORD 3D</div>
+          <h1 class="wallet-title">Рейтинг и статистика мастера</h1>
+          <p class="wallet-subtitle" id="ratingSubtitle">
+            Оперативный статус доходов, оценки по направлениям 3D-печати и верифицированные отзывы заказчиков
+          </p>
+        </div>
+        <div class="wallet-demo-card">
+          <div class="wallet-demo-user" id="ratingUserMeta"></div>
+          <button class="btn btn--ghost btn--small" id="switchRatingUserBtn">Сменить аккаунт</button>
+        </div>
+      </div>
+
+      <!-- Оперативный финансовый и репутационный статус (4 карточки) -->
+      <div class="rating-kpi-grid" id="ratingKpiGrid">
+        <!-- Заполняется в rating.js -->
+      </div>
+
+      <!-- Карточка статуса мастера и оборудования -->
+      <div class="master-rep-card" id="masterRepCard">
+        <!-- Заполняется в rating.js -->
+      </div>
+
+      <!-- Детальные оценки по видам услуг и критериям качества -->
+      <section class="rating-section">
+        <div class="rating-breakdown-grid">
+          
+          <!-- Оценки по услугам -->
+          <div class="rating-box">
+            <div class="box-head">
+              <h3>🛠️ Оценки по категориям услуг</h3>
+              <small class="muted">Статистика оценок за конкретные виды производственных работ</small>
+            </div>
+            <div class="service-scores-list" id="serviceScoresList">
+              <!-- Заполняется в rating.js -->
+            </div>
+          </div>
+
+          <!-- Критерии качества работы -->
+          <div class="rating-box">
+            <div class="box-head">
+              <h3>🎯 Критерии качества и сервиса</h3>
+              <small class="muted">На основе опросов заказчиков при подтверждении готовности деталей</small>
+            </div>
+            <div class="criteria-scores-list" id="criteriaScoresList">
+              <!-- Заполняется в rating.js -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Отзывы реальных заказчиков -->
+      <section class="rating-section">
+        <div class="section-head-row">
+          <div>
+            <h3>Отзывы заказчиков Норильска</h3>
+            <small class="muted">Каждый отзыв привязан к реальному выполненному заказу с гарантией NORD 3D</small>
+          </div>
+        </div>
+
+        <!-- Фильтры отзывов по услугам -->
+        <div class="tx-filters-pills" id="reviewFilters">
+          <button class="tx-pill active" data-filter="all">Все отзывы</button>
+          <button class="tx-pill" data-filter="fdm">🧵 3D-печать FDM</button>
+          <button class="tx-pill" data-filter="sla">💧 Фотополимерная печать</button>
+          <button class="tx-pill" data-filter="scan">🔬 3D-сканирование</button>
+          <button class="tx-pill" data-filter="modeling">✏️ Моделирование</button>
+        </div>
+
+        <!-- Список отзывов -->
+        <div class="reviews-feed" id="reviewsFeed">
+          <!-- Заполняется в rating.js -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script src="rating.js"></script>
+</body>
+</html>

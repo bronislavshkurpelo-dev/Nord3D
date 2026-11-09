@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кошелёк и баланс — NORD 3D Норильск</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="wallet">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader"></header>
+
+  <main class="wallet-page">
+    <div class="container">
+
+      <!-- Заголовок страницы и переключатель аккаунта -->
+      <div class="wallet-header-block">
+        <div>
+          <div class="page-badge">💳 Финансовый центр NORD 3D</div>
+          <h1 class="wallet-title">Кошелёк и баланс</h1>
+          <p class="wallet-subtitle" id="walletSubtitle">
+            Управление средствами, безопасные сделки с гарантией, моментальное пополнение и вывод средств
+          </p>
+        </div>
+        <div class="wallet-demo-card">
+          <div class="wallet-demo-user" id="walletUserMeta"></div>
+          <button class="btn btn--ghost btn--small" id="switchWalletUserBtn">Сменить аккаунт (демо)</button>
+        </div>
+      </div>
+
+      <!-- 4 Ключевые карточки состояния средств -->
+      <div class="wallet-kpi-grid" id="walletKpiGrid">
+        <!-- Заполняется в wallet.js -->
+      </div>
+
+      <!-- Быстрые действия: Пополнение и Вывод -->
+      <div class="wallet-actions-bar">
+        <div class="wallet-actions-left">
+          <button class="btn btn--primary" id="btnOpenDepositModal">
+            💳 Пополнить баланс
+          </button>
+          <button class="btn btn--ghost" id="btnOpenWithdrawModal">
+            ↗ Вывести средства
+          </button>
+        </div>
+        <div class="wallet-escrow-badge">
+          <span class="escrow-shield-icon">🛡️</span>
+          <span>Гарант NORD 3D активен · Защита 100% платежей до подтверждения приёмки</span>
+        </div>
+      </div>
+
+      <!-- Блок активных гарантийных сделок (Холды) -->
+      <section class="wallet-section" id="walletHoldSection" style="display:none">
+        <div class="section-head-row">
+          <div>
+            <h3>🔒 Средства на гарантийном счёте (Холд)</h3>
+            <small class="muted">Заблокированы на время выполнения и проверки заказов</small>
+          </div>
+        </div>
+        <div class="wallet-holds-list" id="walletHoldsList"></div>
+      </section>
+
+      <!-- История транзакций с фильтрами и поиском -->
+      <section class="wallet-section">
+        <div class="section-head-row">
+          <div>
+            <h3>История финансовых операций</h3>
+            <small class="muted">Все зачисления, оплаты по заказам, гарантийные холды и выводы средств</small>
+          </div>
+          <div class="tx-search-wrap">
+            <input type="text" id="txSearchInput" placeholder="🔍 Поиск по номеру или названию заказа..." />
+          </div>
+        </div>
+
+        <!-- Фильтры операций -->
+        <div class="tx-filters-pills" id="txFilters">
+          <button class="tx-pill active" data-filter="all">Все операции</button>
+          <button class="tx-pill" data-filter="deposit">📥 Пополнения</button>
+          <button class="tx-pill" data-filter="hold">🔒 Холд гаранта</button>
+          <button class="tx-pill" data-filter="payout">💰 Выплаты за печать</button>
+          <button class="tx-pill" data-filter="payment">💳 Оплата заказов</button>
+          <button class="tx-pill" data-filter="withdraw">📤 Вывод средств</button>
+        </div>
+
+        <!-- Таблица / лента транзакций -->
+        <div class="tx-feed-card" id="txFeedContainer">
+          <!-- Заполняется в wallet.js -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script src="wallet.js"></script>
+</body>
+</html>

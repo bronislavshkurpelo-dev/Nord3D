@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Основной веб-сервер и API платформы NORD 3D
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nord3d-web
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./profiles:/app/profiles
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - SLICER_MODE=docker
+    restart: always
+
+  # Микросервис нарезки PrusaSlicer CLI
+  slicer:
+    build:
+      context: .
+      dockerfile: Dockerfile.slicer
+    image: nord3d-slicer:latest
+    container_name: nord3d-slicer
+    volumes:
+      - ./uploads:/slicer/uploads
+      - ./profiles:/slicer/profiles:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M

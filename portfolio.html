@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Портфолио мастеров 3D-печати — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=18" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="portfolio">
+  <header id="siteHeader"></header>
+
+  <section class="page-banner">
+    <div class="container">
+      <div class="badge" style="margin-bottom:10px">📸 Витрина выполненных работ</div>
+      <h1>Портфолио мастеров 3D-печати</h1>
+      <p>
+        Реальные детали, корпуса, шестерни и фигурки, напечатанные в Норильске, Талнахе и Кайеркане.
+        Работы, выполненные через биржу NORD 3D, отмечены знаком гарантии и содержат <b>проверенные отзывы заказчиков</b>.
+      </p>
+    </div>
+  </section>
+
+  <main class="section section--tight">
+    <div class="container">
+      
+      <!-- Панель управления портфолио для мастера -->
+      <div id="printerActionBanner" class="portfolio-printer-bar" hidden></div>
+
+      <!-- Фильтры и поиск по портфолио -->
+      <div class="portfolio-filter-box">
+        <div class="portfolio-filter-top">
+          <div class="portfolio-search-wrap">
+            <span class="portfolio-search-icon">🔍</span>
+            <input type="text" id="portfolioSearch" class="portfolio-search-input" placeholder="Поиск деталей (кронштейн, шестерня, корпус, миниатюра)..." />
+            <button id="portfolioSearchClear" class="portfolio-search-clear" title="Очистить" hidden>×</button>
+          </div>
+          <div class="portfolio-filter-selects">
+            <select id="filterDistrict" class="portfolio-select" aria-label="Район">
+              <option value="all">📍 Все районы</option>
+              <option value="Норильск (центр)">Норильск (центр)</option>
+              <option value="Талнах">Талнах</option>
+              <option value="Кайеркан">Кайеркан</option>
+              <option value="Оганер">Оганер</option>
+            </select>
+            <select id="filterPrinter" class="portfolio-select" aria-label="Мастер">
+              <option value="all">👤 Все мастера</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Категории -->
+        <div class="portfolio-chips-row">
+          <span class="portfolio-chips-label">Категория:</span>
+          <div class="portfolio-chips-list" id="categoryChips">
+            <button type="button" class="filter-chip active" data-cat="all">Все работы</button>
+            <button type="button" class="filter-chip" data-cat="Авто/мото и спецтехника">🚗 Авто, мото и снегоходы</button>
+            <button type="button" class="filter-chip" data-cat="Корпуса и приборы">📟 Корпуса и электроника</button>
+            <button type="button" class="filter-chip" data-cat="Фигурки и сувениры">🎭 Фигурки и миниатюры</button>
+            <button type="button" class="filter-chip" data-cat="Архитектура и макеты">🏙️ Архитектура и макеты</button>
+            <button type="button" class="filter-chip" data-cat="Бытовые изделия">🏠 Быт и дом</button>
+            <button type="button" class="filter-chip" data-cat="Промышленные детали">⚙️ Промышленность</button>
+          </div>
+        </div>
+
+        <!-- Материалы и бейдж проверенных отзывов -->
+        <div class="portfolio-bottom-filter-row">
+          <div class="portfolio-chips-row" style="margin:0">
+            <span class="portfolio-chips-label">Пластик:</span>
+            <div class="portfolio-chips-list" id="materialChips">
+              <button type="button" class="filter-chip active" data-mat="all">Все</button>
+              <button type="button" class="filter-chip" data-mat="PETG">PETG</button>
+              <button type="button" class="filter-chip" data-mat="PLA">PLA</button>
+              <button type="button" class="filter-chip" data-mat="ABS">ABS</button>
+              <button type="button" class="filter-chip" data-mat="TPU">TPU (Flex)</button>
+              <button type="button" class="filter-chip" data-mat="RESIN">RESIN (Смола)</button>
+              <button type="button" class="filter-chip" data-mat="CARBON">CARBON</button>
+            </div>
+          </div>
+
+          <label class="verified-toggle-label">
+            <input type="checkbox" id="filterVerifiedOnly" />
+            <span class="verified-toggle-text">🛡️ Только с проверенным отзывом</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Счётчик результатов -->
+      <div class="portfolio-results-bar">
+        <span id="portfolioCountText">Загрузка работ...</span>
+        <div id="portfolioOwnerTabs" class="portfolio-owner-tabs" hidden>
+          <button class="tab-btn active" data-scope="all">Все работы</button>
+          <button class="tab-btn" data-scope="my">Мои работы</button>
+        </div>
+      </div>
+
+      <!-- Сетка карточек портфолио -->
+      <div id="portfolioGrid" class="portfolio-grid"></div>
+
+      <!-- Пустое состояние -->
+      <div id="portfolioEmpty" class="portfolio-empty" hidden>
+        <div class="portfolio-empty-icon">📷</div>
+        <h3 id="portfolioEmptyTitle">Работы не найдены</h3>
+        <p class="muted" id="portfolioEmptyDesc">Попробуйте сбросить фильтры поиска или выберите другой пластик.</p>
+        <button id="portfolioResetFiltersBtn" class="btn btn--ghost" style="margin-top:12px">Сбросить фильтры</button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=18"></script>
+  <script src="cards.js?v=18"></script>
+  <script src="portfolio.js?v=18"></script>
+</body>
+</html>

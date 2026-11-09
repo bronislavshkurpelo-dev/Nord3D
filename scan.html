@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D-сканирование и реверс-инжиниринг в Норильске — NORD 3D</title>
+  <meta name="description" content="Оцифровка сломанных деталей, шестерен, автокомпонентов и физических объектов 3D-сканером в Норильске. Точные 3D-модели STL и STEP без чертежей." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="scan">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+  <header id="siteHeader" class="header"></header>
+
+  <!-- BANNER -->
+  <section class="page-banner" style="--img:url('img/parts.jpg')">
+    <div class="container">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(2,132,199,0.25);border:1px solid #38bdf8;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;color:#e0f2fe;margin-bottom:12px;backdrop-filter:blur(4px)">
+        <span>🔬 Оцифровка физических объектов в Норильске</span>
+      </div>
+      <h1>3D-сканирование и реверс деталей</h1>
+      <p>Сломалась редкая деталь, шестерня или автозапчасть, а чертежа или 3D-файла нет? Оцифруем оригинал с точностью до 0.05 мм, устраним дефекты в CAD и напечатаем новую деталь прямо в Норильске.</p>
+    </div>
+  </section>
+
+  <main class="section section--tight">
+    <div class="container">
+
+      <!-- КАК ЭТО РАБОТАЕТ -->
+      <div class="scan-workflow">
+        <h2 style="font-size:22px;margin-bottom:4px">Как работает 3D-сканирование</h2>
+        <p class="muted">Полный цикл от сломанной железки или пластика до новой готовой детали</p>
+        <div class="scan-workflow-grid">
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">1</span>
+            <div class="scan-wf-icon">📸</div>
+            <h4>1. Фото и заявка</h4>
+            <p>Вы фотографируете деталь со всех сторон и описываете задачу. Мастера оценивают стоимость и сроки.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">2</span>
+            <div class="scan-wf-icon">🔬</div>
+            <h4>2. Оцифровка сканером</h4>
+            <p>Оптический или лазерный 3D-сканер снимает облако точек и строит точный полигональный меш.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">3</span>
+            <div class="scan-wf-icon">📐</div>
+            <h4>3. Реверс-инжиниринг</h4>
+            <p>Мастер убирает сколы, достраивает стёртые зубья шестерни или посадочные отверстия в CAD.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">4</span>
+            <div class="scan-wf-icon">🖨️</div>
+            <h4>4. Печать или CAD-файл</h4>
+            <p>Вы получаете готовую деталь из ударопрочного пластика или цифровой файл (STEP, IGES, STL).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ФОРМА ЗАКАЗА -->
+      <form id="scanOrderForm" class="scan-form-layout" style="margin-top:36px">
+        <div class="scan-form-main">
+          
+          <!-- ШАГ 1: ФОТОГРАФИИ И ОПИСАНИЕ -->
+          <div class="form-card-block">
+            <div class="form-block-head">
+              <span class="badge-num">1</span>
+              <div>
+                <h4>Фотографии оригинала детали</h4>
+                <small>Сделайте 2–5 четких фото сломанного или целого объекта с разных ракурсов</small>
+              </div>
+            </div>
+
+            <div class="scan-upload-area" id="scanDropzone">
+              <input type="file" id="scanFileInput" accept="image/*" multiple style="display:none" />
+              <div class="scan-upload-icon">📷</div>
+              <div class="scan-upload-title">Перетащите фотографии сюда или нажмите для выбора</div>
+              <div class="scan-upload-desc">Поддерживаются JPG, PNG, WEBP. Можно прикрепить фото детали рядом с линейкой для масштаба.</div>
+            </div>
+
+            <div class="scan-photo-gallery" id="scanGallery"></div>
+
+            <div class="form-grid" style="margin-top:20px">
+              <div class="field col-full">
+                <label>Название детали или узла <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <span class="input-icon">⚙️</span>
+                  <input type="text" id="scanTitle" required placeholder="Например: Шестерня привода редуктора, кронштейн фары, крышка помпы..." />
+                </div>
+              </div>
+
+              <div class="field col-full">
+                <label>Описание задачи и дефекты <span class="req">*</span></label>
+                <textarea id="scanComment" required placeholder="Опишите, что случилось с деталью: где отломаны зубья или крепления, какие нагрузки испытывает, нужны ли изменения в конструкции..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- ШАГ 2: ФИЗИЧЕСКИЕ ПАРАМЕТРЫ -->
+          <div class="form-card-block" style="margin-top:24px">
+            <div class="form-block-head">
+              <span class="badge-num">2</span>
+              <div>
+                <h4>Параметры и материал оригинала</h4>
+                <small>Поможет мастеру выбрать подходящую технологию оптического сканирования</small>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Примерные габариты (Д × Ш × В, мм) <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <span class="input-icon">📐</span>
+                  <input type="text" id="scanDimensions" required placeholder="Например: 80 × 50 × 35 мм" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Материал оригинала</label>
+                <div class="input-with-icon">
+                  <span class="input-icon">🧱</span>
+                  <select id="scanOriginalMaterial">
+                    <option value="Пластик / Капролон">Пластик / Капролон</option>
+                    <option value="Алюминий / Металл">Алюминий / Металл</option>
+                    <option value="Резина / Силикон">Резина / Полиуретан</option>
+                    <option value="Керамика / Гипс">Керамика / Гипс</option>
+                    <option value="Дерево">Дерево</option>
+                    <option value="Другое">Другое / Составной узел</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field col-full">
+                <label>Особенности поверхности оригинала</label>
+                <div class="input-with-icon">
+                  <span class="input-icon">✨</span>
+                  <select id="scanSurface">
+                    <option value="Стандартная матовая (сканируется сразу)">Стандартная матовая (сканируется сразу без спецподготовки)</option>
+                    <option value="Глянцевая / бликующая (потребуется матирующий спрей)">Глянцевая / бликующая (мастер нанесёт смываемый матирующий спрей)</option>
+                    <option value="Прозрачная / полупрозрачная">Прозрачная / полупрозрачная (требует подготовки)</option>
+                    <option value="Сложная геометрия со скрытыми полостями">Сложная геометрия с внутренними полостями и резьбами</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ШАГ 3: ЦЕЛЬ И 3D-ПЕЧАТЬ -->
+          <div class="form-card-block" style="margin-top:24px">
+            <div class="form-block-head">
+              <span class="badge-num">3</span>
+              <div>
+                <h4>Что нужно получить на выходе</h4>
+                <small>Выберите требуемый формат результата и необходимость печати</small>
+              </div>
+            </div>
+
+            <div class="scan-goals-grid">
+              <label class="scan-goal-card">
+                <input type="radio" name="scanGoal" value="Точная копия для 3D-печати (STL / 3MF)" checked />
+                <div class="scan-goal-card__inner">
+                  <h5>🖨️ STL / 3MF для печати</h5>
+                  <small>Оцифрованный полигональный меш, готовый для слайсинга и печати.</small>
+                </div>
+              </label>
+
+              <label class="scan-goal-card">
+                <input type="radio" name="scanGoal" value="Реверс-инжиниринг (восстановление утраченных частей)" />
+                <div class="scan-goal-card__inner">
+                  <h5>🔧 Полный реверс-инжиниринг</h5>
+                  <small>Восстановление отломанных зубьев, крепежей и геометрии с нуля.</small>
+                </div>
+              </label>
+
+              <label class="scan-goal-card">
+                <input type="radio" name="scanGoal" value="Параметрическая CAD-модель (STEP / IGES)" />
+                <div class="scan-goal-card__inner">
+                  <h5>📐 CAD-модель (STEP / IGES)</h5>
+                  <small>Твердотельная модель для станков с ЧПУ, лазерной резки или архива.</small>
+                </div>
+              </label>
+
+              <label class="scan-goal-card">
+                <input type="radio" name="scanGoal" value="Высокополигональная 3D-модель (OBJ / FBX)" />
+                <div class="scan-goal-card__inner">
+                  <h5>🎨 3D-модель (OBJ / FBX)</h5>
+                  <small>Для визуализации, рендеринга, анимации или арт-проектов.</small>
+                </div>
+              </label>
+            </div>
+
+            <!-- ТРЕБУЕТСЯ ЛИ 3D-ПЕЧАТЬ -->
+            <div class="scan-print-toggle-box" id="scanPrintBox">
+              <label class="scan-toggle-row">
+                <div class="scan-toggle-label">
+                  <b>🖨️ Распечатать готовую деталь на 3D-принтере</b>
+                  <span>Мастер не только отсканирует объект, но и сразу изготовит новую физическую деталь</span>
+                </div>
+                <input type="checkbox" id="scanNeedsPrint" style="display:none" checked />
+                <div class="scan-switch-btn"></div>
+              </label>
+
+              <div class="scan-print-options" id="scanPrintOptions">
+                <div class="form-grid">
+                  <div class="field">
+                    <label>Материал для печати</label>
+                    <select id="scanPrintMaterial">
+                      <option value="PETG" selected>PETG (ударопрочный, для севера и авто)</option>
+                      <option value="ABS">ABS (термостойкий, под нагрузки и шестерни)</option>
+                      <option value="PLA">PLA (корпуса, макеты, бытовое)</option>
+                      <option value="TPU">TPU (эластичная резина, уплотнения)</option>
+                      <option value="RESIN">Фотополимерная смола (высочайшая точность)</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label>Количество штук</label>
+                    <div class="input-with-icon">
+                      <span class="input-icon">🔢</span>
+                      <input type="number" id="scanPrintQty" min="1" max="100" value="1" />
+                    </div>
+                  </div>
+
+                  <div class="field col-full">
+                    <label>Желаемый цвет</label>
+                    <div class="input-with-icon">
+                      <span class="input-icon">🎨</span>
+                      <input type="text" id="scanPrintColor" value="Чёрный" placeholder="Чёрный, серый, белый..." />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:18px">
+              <label>Способ передачи оригинальной детали мастеру</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🤝</span>
+                <select id="scanHandover">
+                  <option value="Привезу мастеру лично (Норильск / Талнах / Кайеркан)">Привезу мастеру лично (Норильск, Талнах, Кайеркан)</option>
+                  <option value="Требуется выезд мастера со сканером на объект">Выезд мастера со сканером на объект</option>
+                  <option value="Отправлю на такси / курьером по Норильску">Доставка курьером / такси по Норильску</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ШАГ 4: ЛОКАЦИЯ И БЮДЖЕТ -->
+          <div class="form-card-block" style="margin-top:24px">
+            <div class="form-block-head">
+              <span class="badge-num">4</span>
+              <div>
+                <h4>Район, сроки и бюджет</h4>
+                <small>Укажите удобную локацию и ориентировочный бюджет</small>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Район Норильска <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <span class="input-icon">📍</span>
+                  <select id="scanDistrict"></select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Желаемый срок готовности <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <span class="input-icon">📅</span>
+                  <input type="date" id="scanDeadline" required />
+                </div>
+              </div>
+
+              <div class="field col-full">
+                <label>Ваш бюджет на заказ (руб.) <span class="req">*</span></label>
+                <div class="input-with-icon has-suffix">
+                  <span class="input-icon">💰</span>
+                  <input type="number" id="scanBudget" required min="500" step="100" value="2500" />
+                  <span class="input-suffix">₽</span>
+                </div>
+                <small class="field-hint muted">Мастера в откликах предложат точную цену в зависимости от сложности реверса.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- БЛОК МОНЕТИЗАЦИИ: ОПЦИИ И БЕЗОПАСНАЯ СДЕЛКА -->
+          <div id="scanMonetizationBox"></div>
+
+        </div>
+
+        <!-- САЙДБАР С КАЛЬКУЛЯТОРОМ И КНОПКОЙ -->
+        <aside class="scan-sidebar-sticky">
+          <div class="scan-summary-card">
+            <h3>🔬 Итог заказа на скан</h3>
+            
+            <div class="scan-summary-list">
+              <div class="scan-summary-row">
+                <span>Фотографий</span>
+                <b id="sumPhotos">0 шт.</b>
+              </div>
+              <div class="scan-summary-row">
+                <span>Материал оригинала</span>
+                <b id="sumOriginal">Пластик</b>
+              </div>
+              <div class="scan-summary-row">
+                <span>Результат</span>
+                <b id="sumGoal">STL + реверс</b>
+              </div>
+              <div class="scan-summary-row">
+                <span>Печать детали</span>
+                <b id="sumPrint">Да (PETG, 1 шт.)</b>
+              </div>
+              <div class="scan-summary-row">
+                <span>Район</span>
+                <b id="sumDistrict">Норильск (центр)</b>
+              </div>
+            </div>
+
+            <div class="scan-price-tag">
+              <small>Ориентировочный бюджет</small>
+              <div class="val" id="sumBudget">2 500 ₽</div>
+            </div>
+
+            <p id="scanFormMsg" class="form-msg" style="display:none"></p>
+
+            <button type="submit" class="btn btn--primary btn--wide" style="height:50px;font-size:15px;font-weight:800;background:linear-gradient(135deg, #0284c7, #0ca678);border:none">
+              🚀 Опубликовать заказ на скан
+            </button>
+            <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:10px">
+              Мастера Норильска получат уведомление и пришлют предложения в течение 1–2 часов.
+            </p>
+          </div>
+
+          <div class="card" style="padding:20px;border-radius:16px">
+            <h4 style="font-size:14px;font-weight:800;margin-bottom:8px">💡 Совет по съемке детали:</h4>
+            <ul style="font-size:12px;color:var(--text-muted);padding-left:18px;line-height:1.6;margin:0">
+              <li>Положите рядом линейку или монету для оценки масштаба.</li>
+              <li>Сделайте крупный план места скола, трещины или износа.</li>
+              <li>Снимите деталь со всех 4 сторон, а также сверху и снизу.</li>
+            </ul>
+          </div>
+        </aside>
+      </form>
+
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="scan.js?v=10"></script>
+</body>
+</html>
+

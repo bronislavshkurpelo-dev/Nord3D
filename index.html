@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NORD 3D — биржа 3D-печати в Норильске</title>
+  <meta name="description" content="Платформа заказа 3D-печати в Норильске. Загрузите модель STL или 3MF, общайтесь в чате с местными мастерами и забирайте готовые детали." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="index">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader" class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">NORD<span>3D</span></a>
+      <nav class="nav" id="nav">
+        <a href="index.html" class="active">Главная</a>
+        <a href="order.html">Разместить заказ</a>
+        <a href="printers.html">Исполнители</a>
+      </nav>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">🌙</button>
+        <button class="btn btn--small btn--primary" id="loginBtn">Войти</button>
+        <button class="burger" id="burger" aria-label="Меню">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero hero--light">
+      <div class="container hero__inner">
+        <div class="hero__text">
+          <div class="badge">📍 Норильск · Талнах · Кайеркан · Оганер</div>
+          <h1>Норильская биржа<br /><span class="gradient">3D печати</span></h1>
+          <p class="lead">Загрузите 3D-модель STL или 3MF — мастера города рассчитают стоимость печати, ответят в онлайн-чате и напечатают детали за 1–3 дня.</p>
+          <div class="hero__actions" id="heroActions">
+            <a href="order.html" class="btn btn--primary">Разместить заказ</a>
+            <a href="printers.html" class="btn btn--ghost">Найти мастера онлайн</a>
+          </div>
+          <ul class="hero__stats" id="stats"></ul>
+        </div>
+        <div class="hero__image-wrap">
+          <div class="hero__carousel" id="heroCarousel">
+            <div class="hero__slides" id="heroSlides">
+              <div class="hero__slide active" data-index="0">
+                <img src="img/hero.jpg" alt="Норильск · Полярная ночь" class="hero__slide-img" />
+                <div class="hero__slide-overlay"></div>
+              </div>
+            </div>
+
+            <!-- Вспышка северного сияния при смене кадра -->
+            <div class="hero__carousel-aurora" id="heroAurora"></div>
+
+            <!-- Бейдж-подпись с текущей темой кадра -->
+            <div class="hero__carousel-tag" id="heroCarouselTag">
+              <span class="hero__carousel-icon">🌌</span>
+              <span id="heroCarouselCaption">Норильск · Полярная ночь</span>
+            </div>
+
+            <!-- Стрелки переключения -->
+            <button class="hero__carousel-nav hero__carousel-nav--prev" id="heroPrev" aria-label="Предыдущее фото">‹</button>
+            <button class="hero__carousel-nav hero__carousel-nav--next" id="heroNext" aria-label="Следующее фото">›</button>
+
+            <!-- Индикаторы прогресса (Stories style) -->
+            <div class="hero__carousel-indicators" id="heroIndicators"></div>
+          </div>
+          <div class="hero__floating-card">
+            <div class="hero__floating-card-left">
+              <span class="online-dot"></span>
+              <div>
+                <b>Мастера в сети</b>
+                <small>Готовы взять заказ в работу прямо сейчас</small>
+              </div>
+            </div>
+            <a href="printers.html" class="btn btn--small btn--ghost" style="flex-shrink:0;text-decoration:none">Выбрать мастера →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ДВЕ СТОРОНЫ: ЗАКАЗЧИКАМ И ИСПОЛНИТЕЛЯМ -->
+    <section class="section">
+      <div class="container">
+        <h2>Одна платформа — две стороны</h2>
+        <p class="muted" style="margin-bottom:8px">Объединяем жителей, которым нужны детали, и местных мастеров с оборудованием.</p>
+        <div class="sides">
+          <article class="side">
+            <img src="img/parts.jpg" alt="Напечатанные детали из PLA и PETG" loading="lazy" />
+            <div class="side__body">
+              <span class="tag">Заказчикам</span>
+              <h3>Нужна деталь? Найдите мастера рядом</h3>
+              <ul class="ticks">
+                <li>Загрузите модель STL или 3MF — сайт сразу оценит объём и бюджет</li>
+                <li>Получите отклики от печатников Норильска с ценой и сроком</li>
+                <li>Уточняйте любые нюансы во встроенном чате прямо на сайте</li>
+                <li>Выберите лучшего мастера по рейтингу, отзывам и оборудованию</li>
+              </ul>
+              <a href="order.html" class="btn btn--primary">Разместить заказ</a>
+            </div>
+          </article>
+          <article class="side">
+            <img src="img/workshop.jpg" alt="Домашняя мастерская с 3D-принтерами" loading="lazy" />
+            <div class="side__body">
+              <span class="tag tag--primary">Исполнителям</span>
+              <h3>Есть 3D-принтер? Пусть он зарабатывает</h3>
+              <ul class="ticks">
+                <li>Лента заказов из вашего района Норильска без поиска клиентов</li>
+                <li>Сами назначаете цену и срок выполнения в отклике</li>
+                <li>Прямой чат с клиентом для согласования чертежей</li>
+                <li>Копите рейтинг и получайте постоянных клиентов</li>
+              </ul>
+              <div id="sidePrinterAction"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- КАК ЭТО РАБОТАЕТ -->
+    <section class="section section--light-alt">
+      <div class="container">
+        <h2>Как устроен сервис</h2>
+        <div class="steps">
+          <div class="step"><span>1</span><h3>Загрузите модель</h3><p>Файлы STL или 3MF. Моментальный 3D-просмотр и расчёт веса.</p></div>
+          <div class="step"><span>2</span><h3>Отклики мастеров</h3><p>Печатники предлагают свои цены и сроки в ленте заказов.</p></div>
+          <div class="step"><span>3</span><h3>Чат на сайте</h3><p>Уточните детали в чате без необходимости звонков и сторонних мессенджеров.</p></div>
+          <div class="step"><span>4</span><h3>Готовая деталь</h3><p>Забирайте заказ в вашем районе Норильска или оформите доставку.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3D СКАНИРОВАНИЕ И РЕВЕРС-ИНЖИНИРИНГ -->
+    <section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+      <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px">
+          <div>
+            <span class="tag" style="background:rgba(2,132,199,0.12);color:#0284c7;font-weight:800;border:1px solid rgba(56,189,248,0.4)">Новый раздел для заказчиков</span>
+            <h2 style="margin:8px 0 6px">3D-сканирование и реверс деталей</h2>
+            <p class="muted" style="margin:0">Нет готовой 3D-модели или чертежа? Оцифруем сломанную деталь, автозапчасть или прототип 3D-сканером с точностью до 0.05 мм.</p>
+          </div>
+          <a href="scan.html" class="btn btn--primary" style="background:linear-gradient(135deg,#0284c7,#0ca678);border:none;height:48px;padding:0 24px;font-size:15px;display:inline-flex;align-items:center;gap:8px">
+            <span>🔬 Заказать 3D-сканирование</span> →
+          </a>
+        </div>
+        <div class="scan-workflow-grid">
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">1</span>
+            <div class="scan-wf-icon">📸</div>
+            <h4>Фотографируете деталь</h4>
+            <p>Загружаете фото сломанного объекта со всех сторон и указываете размеры.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">2</span>
+            <div class="scan-wf-icon">🔬</div>
+            <h4>Оптический 3D-скан</h4>
+            <p>Мастер в Норильске снимает точную геометрию лазерным или оптическим сканером.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">3</span>
+            <div class="scan-wf-icon">📐</div>
+            <h4>Реверс-инжиниринг в CAD</h4>
+            <p>Восстановление отломанных зубьев, крепежей, трещин и резьбы в CAD-программе.</p>
+          </div>
+          <div class="scan-wf-step">
+            <span class="scan-wf-num">4</span>
+            <div class="scan-wf-icon">🖨️</div>
+            <h4>Печать и файл</h4>
+            <p>Получаете готовую прочную деталь из пластика и цифровой файл (STEP / STL).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СВЕЖИЕ ЗАКАЗЫ И ТОП МАСТЕРОВ -->
+    <section class="section">
+      <div class="container">
+        <div class="section__head" id="latestOrdersHead">
+          <div>
+            <h2>Актуальные заказы</h2>
+            <p class="muted">Заказы от жителей Норильска, ожидающие мастера</p>
+          </div>
+          <span id="moreOrdersAction"></span>
+        </div>
+        <div class="order-grid" id="latestOrders"></div>
+
+        <div class="section__head" id="topPrintersHead" style="margin-top:60px">
+          <div>
+            <h2>Мастера платформы</h2>
+            <p class="muted">Специалисты с готовым оборудованием</p>
+          </div>
+          <a href="printers.html" class="link-more">Все мастера в каталоге →</a>
+        </div>
+        <div class="printer-grid" id="topPrinters"></div>
+      </div>
+    </section>
+
+    <!-- МАТЕРИАЛЫ (5 ШТУК) -->
+    <section class="section section--light-alt">
+      <div class="container">
+        <h2>Доступные материалы</h2>
+        <p class="section__sub">Наши мастера печатают всеми популярными пластиками и смолами под любые задачи в условиях Крайнего Севера.</p>
+        <div class="materials-grid">
+          <div class="mat-card">
+            <div class="mat-card__color" style="background:#e67700"></div>
+            <h3>PLA</h3>
+            <p>Идеален для прототипов, корпусов электроники, макетов и интерьерных вещей. Легко печатается, точные размеры.</p>
+            <b>от 10 ₽ / грамм</b>
+          </div>
+          <div class="mat-card">
+            <div class="mat-card__color" style="background:#0ca678"></div>
+            <h3>PETG</h3>
+            <p>Ударопрочный, влагостойкий. Подходит для кронштейнов, деталей снегоходов и всего, что используется на улице.</p>
+            <b>от 12 ₽ / грамм</b>
+          </div>
+          <div class="mat-card">
+            <div class="mat-card__color" style="background:#d9480f"></div>
+            <h3>ABS</h3>
+            <p>Термостойкий пластик (держит до 100°C). Применяется для шестерёнок, автозапчастей и узлов под нагрузкой.</p>
+            <b>от 12 ₽ / грамм</b>
+          </div>
+          <div class="mat-card">
+            <div class="mat-card__color" style="background:#7048e8"></div>
+            <h3>TPU (Резина)</h3>
+            <p>Гибкий эластичный материал. Для прокладок, манжет, демпферов, защитных бамперов и уплотнителей.</p>
+            <b>от 18 ₽ / грамм</b>
+          </div>
+          <div class="mat-card">
+            <div class="mat-card__color" style="background:#1971c2"></div>
+            <h3>Фотополимер (Resin)</h3>
+            <p>Сверхвысокая детализация с толщиной слоя 0.05 мм. Идеален для миниатюр, ювелирных моделей и сувениров.</p>
+            <b>от 25 ₽ / грамм</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ГАЛЕРЕЯ -->
+    <section class="section">
+      <div class="container">
+        <h2>Галерея изделий</h2>
+        <div class="gallery">
+          <figure class="g1"><img src="img/printer.jpg" alt="Печать детали" loading="lazy" /><figcaption>Точная послойная печать</figcaption></figure>
+          <figure class="g2"><img src="img/parts.jpg" alt="Готовые детали" loading="lazy" /><figcaption>Запчасти и функционал</figcaption></figure>
+          <figure class="g3"><img src="img/model-city.jpg" alt="Архитектурный макет" loading="lazy" /><figcaption>Макеты и миниатюры</figcaption></figure>
+          <figure class="g4"><img src="img/workshop.jpg" alt="Мастерская" loading="lazy" /><figcaption>Оборудованные мастерские Норильска</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЧАСТЫЕ ВОПРОСЫ (FAQ) -->
+    <section id="faq" class="section section--light-alt">
+      <div class="container narrow">
+        <h2 style="text-align:center">Частые вопросы</h2>
+        <p class="muted" style="text-align:center;margin-bottom:24px">Ответы на популярные вопросы о 3D-печати в Норильске</p>
+        <details>
+          <summary>Какие форматы файлов принимаются?</summary>
+          <p>Сайт принимает файлы <b>STL</b> и <b>3MF</b>. Модель анализируется прямо в браузере: вы сразу видите 3D-модель, точные габариты в миллиметрах и расчётный объём пластика.</p>
+        </details>
+        <details>
+          <summary>У меня нет 3D-модели, только сломанная деталь. Что делать?</summary>
+          <p>Воспользуйтесь нашим разделом <a href="scan.html" style="color:var(--accent);font-weight:700">3D-сканирование</a>! Загрузите фотографии сломанной детали с разных сторон, и мастера Норильска отсканируют её оптическим 3D-сканером, восстановят утраченные элементы в CAD и напечатают точную копию.</p>
+        </details>
+        <details>
+          <summary>Какой пластик лучше выбрать для морозов Норильска?</summary>
+          <p>Для уличных условий, снегоходов и авто лучше всего подходит <b>PETG</b> (ударопрочный и влагостойкий) или <b>ABS</b>. Для эластичных уплотнителей и прокладок выбирайте <b>TPU</b> (не дубеет на холоде до −40°C). Для дома и сувениров идеален <b>PLA</b>.</p>
+        </details>
+        <details>
+          <summary>Как связаться с мастером и забрать заказ?</summary>
+          <p>После отклика мастера вы можете открыть чат прямо на сайте, согласовать все размеры и сроки. Забрать заказ можно самовывозом в вашем районе (Норильск, Талнах, Кайеркан, Оганер) или заказать доставку.</p>
+        </details>
+        <details>
+          <summary>Сколько времени занимает печать?</summary>
+          <p>Небольшие детали печатаются от 2 до 6 часов. Типичный срок выполнения заказа — 1–2 дня. Если требуется срочно, укажите это в заказе: мастера берут срочные заказы за 24 часа.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ПРИЗЫВ К ДЕЙСТВИЮ (CTA) -->
+    <section class="cta-banner">
+      <div class="container cta-banner__inner">
+        <div>
+          <h2>Нужно что-то напечатать в Норильске?</h2>
+          <p class="muted">Загрузите 3D-модель прямо сейчас — мастера рассчитают стоимость и пришлют отклики в течение часа.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap" id="ctaActions">
+          <a href="order.html" class="btn btn--primary">Разместить заказ онлайн</a>
+          <a href="printers.html" class="btn btn--ghost">Каталог мастеров</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script>
+    (() => {
+      const { DB, loginModal } = N3D;
+      const orders = DB.orders(), printers = DB.printers();
+      const open = orders.filter((o) => o.status === "open").length;
+      document.getElementById("stats").innerHTML = `
+        <li><b>${printers.length}</b><span>мастеров в Норильске</span></li>
+        <li><b>${open}</b><span>заказов ждут печати</span></li>
+        <li><b>1–3 дня</b><span>средний срок</span></li>
+      `;
+      const u = DB.user();
+      const isPrinter = u && u.role === "printer";
+      const isAdmin = u && u.role === "admin";
+      const canSeeOrders = isPrinter || isAdmin;
+
+      const ordersHead = document.getElementById("latestOrdersHead");
+      const ordersGrid = document.getElementById("latestOrders");
+      const topPrintersHead = document.getElementById("topPrintersHead");
+
+      if (canSeeOrders) {
+        const latest = orders.filter((o) => o.status === "open").slice(0, 3);
+        if (ordersGrid) ordersGrid.innerHTML = latest.map(N3DCards.order).join("");
+        if (ordersHead) ordersHead.style.display = "";
+        if (ordersGrid) ordersGrid.style.display = "";
+        if (topPrintersHead) topPrintersHead.style.marginTop = "60px";
+      } else {
+        if (ordersHead) ordersHead.style.display = "none";
+        if (ordersGrid) { ordersGrid.style.display = "none"; ordersGrid.innerHTML = ""; }
+        if (topPrintersHead) topPrintersHead.style.marginTop = "0";
+      }
+      document.getElementById("topPrinters").innerHTML = printers.slice(0, 3).map(N3DCards.printer).join("");
+
+      // Карусель изображений Норильска и 3D-печати
+      (() => {
+        const slidesData = [
+          { src: "img/hero.jpg", tag: "Норильск · Полярная ночь", icon: "🌌" },
+          { src: "img/hero-aurora-lab.jpg", tag: "Лаборатория под северным сиянием", icon: "⚡" },
+          { src: "img/hero-arctic-gears.jpg", tag: "Шестерни для морозов до -50°C", icon: "⚙️" },
+          { src: "img/hero-winter-maker.jpg", tag: "Мастерские норильских мейкеров", icon: "🏠" },
+          { src: "img/hero-city-miniature.jpg", tag: "Миниатюра Ленинского проспекта", icon: "🏙️" },
+          { src: "img/hero-resin-sculpture.jpg", tag: "Сверхточная печать фотополимером", icon: "💎" },
+          { src: "img/hero-talnakh-workshop.jpg", tag: "Мастерская 3D-печати в Талнахе", icon: "🛠️" },
+          { src: "img/hero-delivery-snow.jpg", tag: "Быстрая выдача деталей в городе", icon: "📦" },
+          { src: "img/hero-drone-part.jpg", tag: "Инженерные композиты и карбон", icon: "🛰️" },
+          { src: "img/model-city.jpg", tag: "Архитектурные макеты зданий", icon: "🏢" }
+        ];
+
+        const carousel = document.getElementById("heroCarousel");
+        const slidesContainer = document.getElementById("heroSlides");
+        const aurora = document.getElementById("heroAurora");
+        const tagEl = document.getElementById("heroCarouselTag");
+        const indicatorsEl = document.getElementById("heroIndicators");
+        const prevBtn = document.getElementById("heroPrev");
+        const nextBtn = document.getElementById("heroNext");
+
+        if (!carousel || !slidesContainer) return;
+        aurora?.addEventListener("animationend", () => aurora.classList.remove("flash"));
+
+        slidesContainer.innerHTML = slidesData.map((s, i) => `
+          <div class="hero__slide ${i === 0 ? "active" : ""}" data-index="${i}">
+            <img src="${s.src}" alt="${s.tag}" class="hero__slide-img" loading="${i === 0 ? "eager" : "lazy"}" />
+            <div class="hero__slide-overlay"></div>
+          </div>
+        `).join("");
+
+        indicatorsEl.innerHTML = slidesData.map((_, i) => `
+          <div class="hero__carousel-dot ${i === 0 ? "active" : ""}" data-dot="${i}">
+            <div class="hero__carousel-dot-fill"></div>
+          </div>
+        `).join("");
+
+        let currentIndex = 0;
+        let timer = null;
+        let isPaused = false;
+        const slideDuration = 5200;
+
+        function setSlide(index) {
+          if (index === currentIndex) return;
+          const slides = slidesContainer.querySelectorAll(".hero__slide");
+          const dots = indicatorsEl.querySelectorAll(".hero__carousel-dot");
+          if (!slides.length) return;
+
+          slides[currentIndex].classList.remove("active");
+          slides[currentIndex].classList.add("prev");
+          dots[currentIndex].classList.remove("active");
+
+          // Вспышка северного сияния (Aurora sweep wave)
+          if (aurora) {
+            aurora.classList.remove("flash");
+            void aurora.offsetWidth;
+            aurora.classList.add("flash");
+          }
+
+          currentIndex = (index + slidesData.length) % slidesData.length;
+          slides[currentIndex].classList.add("active");
+          slides[currentIndex].classList.remove("prev");
+
+          dots[currentIndex].classList.add("active");
+          const fill = dots[currentIndex].querySelector(".hero__carousel-dot-fill");
+          if (fill) {
+            fill.style.animation = "none";
+            void fill.offsetWidth;
+            fill.style.animation = "";
+          }
+
+          const curData = slidesData[currentIndex];
+          if (tagEl && curData) {
+            tagEl.style.opacity = "0";
+            tagEl.style.transform = "translateY(-4px)";
+            setTimeout(() => {
+              tagEl.innerHTML = `<span class="hero__carousel-icon">${curData.icon}</span><span>${curData.tag}</span>`;
+              tagEl.style.opacity = "1";
+              tagEl.style.transform = "translateY(0)";
+            }, 200);
+          }
+
+          startTimer();
+        }
+
+        function nextSlide() { setSlide(currentIndex + 1); }
+        function prevSlide() { setSlide(currentIndex - 1); }
+
+        function startTimer() {
+          clearTimeout(timer);
+          if (!isPaused) {
+            timer = setTimeout(nextSlide, slideDuration);
+          }
+        }
+
+        prevBtn?.addEventListener("click", (e) => { e.preventDefault(); prevSlide(); });
+        nextBtn?.addEventListener("click", (e) => { e.preventDefault(); nextSlide(); });
+
+        indicatorsEl.addEventListener("click", (e) => {
+          const dot = e.target.closest(".hero__carousel-dot");
+          if (!dot) return;
+          const idx = parseInt(dot.getAttribute("data-dot"), 10);
+          if (!isNaN(idx)) setSlide(idx);
+        });
+
+        carousel.addEventListener("mouseenter", () => {
+          isPaused = true;
+          clearTimeout(timer);
+          const activeFill = indicatorsEl.querySelector(".hero__carousel-dot.active .hero__carousel-dot-fill");
+          if (activeFill) activeFill.style.animationPlayState = "paused";
+        });
+        carousel.addEventListener("mouseleave", () => {
+          isPaused = false;
+          const activeFill = indicatorsEl.querySelector(".hero__carousel-dot.active .hero__carousel-dot-fill");
+          if (activeFill) activeFill.style.animationPlayState = "running";
+          startTimer();
+        });
+
+        // Свайпы на тач-экранах
+        let touchStartX = 0;
+        carousel.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        carousel.addEventListener("touchend", (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          const diff = touchStartX - touchEndX;
+          if (Math.abs(diff) > 40) {
+            if (diff > 0) nextSlide();
+            else prevSlide();
+          }
+        }, { passive: true });
+
+        startTimer();
+      })();
+
+      // Адаптация под роль исполнителя:
+      // Скрываются кнопки «Разместить заказ» и «Исполнители»,
+      // вместо них показываются действия для мастера («Биржа заказов» и «Кабинет»).
+      if (isPrinter) {
+        const heroAct = document.getElementById("heroActions");
+        if (heroAct) {
+          heroAct.innerHTML = `
+            <a href="orders.html" class="btn btn--primary">Лента заказов Норильска</a>
+            <a href="cabinet.html" class="btn btn--ghost">💬 Мои сообщения</a>
+          `;
+        }
+
+        const ctaAct = document.getElementById("ctaActions");
+        if (ctaAct) {
+          ctaAct.innerHTML = `
+            <a href="orders.html" class="btn btn--primary">Перейти к бирже заказов</a>
+            <a href="cabinet.html" class="btn btn--ghost">Мои сообщения</a>
+          `;
+        }
+      }
+
+      const sideAct = document.getElementById("sidePrinterAction");
+      if (sideAct) {
+        if (isPrinter) {
+          sideAct.innerHTML = `<a href="orders.html" class="btn btn--ghost">Смотреть биржу заказов</a>`;
+        } else {
+          sideAct.innerHTML = `<button class="btn btn--ghost" id="sideJoinBtn">Стать исполнителем</button>`;
+          document.getElementById("sideJoinBtn")?.addEventListener("click", () => loginModal("printer"));
+        }
+      }
+
+      const moreAct = document.getElementById("moreOrdersAction");
+      if (moreAct) {
+        if (isPrinter) {
+          moreAct.innerHTML = `<a href="orders.html" class="link-more">Смотреть все заказы →</a>`;
+        } else {
+          moreAct.innerHTML = "";
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Биржа заказов — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="orders">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader" class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">NORD<span>3D</span></a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="order.html">Разместить заказ</a>
+        <a href="orders.html" class="active">Биржа заказов</a>
+        <a href="printers.html">Исполнители</a>
+      </nav>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">🌙</button>
+        <button class="btn btn--small btn--primary" id="loginBtn">Войти</button>
+        <button class="burger" id="burger" aria-label="Меню">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-banner" style="--img:url('img/workshop.jpg')">
+    <div class="container">
+      <h1>Биржа заказов</h1>
+      <p>Заказы на 3D-печать от жителей Норильска. Исполнители откликаются со своей ценой и сроком.</p>
+    </div>
+  </section>
+
+  <main class="section section--tight">
+    <div class="container">
+      <div class="toolbar">
+        <div class="tabs" id="tabs">
+          <button data-tab="open" class="active">Открытые</button>
+          <button data-tab="scan" id="tabScan">🔬 3D-сканирование</button>
+          <button data-tab="all">Все заказы</button>
+          <button data-tab="my" id="tabMy">Мои</button>
+        </div>
+        <div class="filters">
+          <select id="fMaterial"><option value="">Все материалы</option><option>PLA</option><option>PETG</option></select>
+          <select id="fDistrict"><option value="">Все районы</option></select>
+          <select id="fSort">
+            <option value="new">Сначала новые</option>
+            <option value="budget">Дороже</option>
+            <option value="deadline">Срочные</option>
+          </select>
+        </div>
+      </div>
+      <p class="muted" id="myHint" hidden></p>
+      <div class="order-grid" id="list"></div>
+      <div class="empty" id="empty" hidden>
+        <img src="img/model-city.jpg" alt="" />
+        <div><h3>Здесь пока пусто</h3><p class="muted" id="emptyText">Заказов по выбранным фильтрам нет.</p><a href="order.html" class="btn">Разместить заказ</a></div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script src="orders.js"></script>
+</body>
+</html>
+

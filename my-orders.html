@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мои заказы и сделки — NORD 3D Норильск</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=18" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="my-orders">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader"></header>
+
+  <main class="orders-page" style="padding-top:24px;padding-bottom:60px">
+    <div class="container">
+
+      <!-- Заголовок страницы и статус пользователя -->
+      <div class="deals-header-block" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px">
+        <div>
+          <div class="page-badge" style="margin-bottom:8px">🛡️ Гарант NORD 3D · Управление сделками</div>
+          <h1 style="font-size:30px;font-weight:800;margin:0 0 6px;letter-spacing:-0.5px">Мои заказы и сделки</h1>
+          <p class="muted" style="margin:0;font-size:14.5px;max-width:640px;line-height:1.5">
+            Контроль этапов выполнения 3D-печати, передача готовых деталей, безопасная приёмка и закрытие заказов с гарантией платформы.
+          </p>
+        </div>
+        <div class="deals-user-meta" id="dealsUserMeta"></div>
+      </div>
+
+      <!-- KPI карточки статистики -->
+      <div class="deals-kpi-grid" id="dealsKpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:24px">
+        <!-- Заполняется в my-orders.js -->
+      </div>
+
+      <!-- FunPay-панель переключения и фильтрации -->
+      <div class="deals-control-card" style="background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:16px 20px;box-shadow:var(--shadow-sm);margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+          
+          <!-- Основные роли (FunPay табы: Покупки / Продажи / Все) -->
+          <div class="deals-role-tabs" id="roleTabs" style="display:flex;gap:8px;background:var(--bg-subtle);padding:4px;border-radius:12px;border:1px solid var(--border)">
+            <button class="deals-tab-btn active" data-tab="all" style="padding:8px 16px;border-radius:9px;font-size:13px;font-weight:700;border:none;background:transparent;color:var(--text);cursor:pointer;transition:all .15s">
+              📋 Все заказы
+            </button>
+            <button class="deals-tab-btn" data-tab="customer" style="padding:8px 16px;border-radius:9px;font-size:13px;font-weight:700;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s">
+              🛒 Мои покупки (заказчик)
+            </button>
+            <button class="deals-tab-btn" data-tab="printer" style="padding:8px 16px;border-radius:9px;font-size:13px;font-weight:700;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s">
+              💼 Мои продажи (исполнитель)
+            </button>
+          </div>
+
+          <!-- Фильтры по статусам -->
+          <div class="deals-status-filters" id="statusFilters" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="tx-pill active" data-status="all">Все статусы</button>
+            <button class="tx-pill" data-status="in_work">⚙️ В производстве</button>
+            <button class="tx-pill" data-status="ready">📦 Готовы к выдаче</button>
+            <button class="tx-pill" data-status="done">✓ Завершённые</button>
+            <button class="tx-pill" data-status="open">📋 Открытые на бирже</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Лента заказов и сделок -->
+      <div id="dealsFeedContainer" style="display:flex;flex-direction:column;gap:20px">
+        <!-- Заполняется в my-orders.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=18"></script>
+  <script src="cards.js"></script>
+  <script src="my-orders.js"></script>
+</body>
+</html>

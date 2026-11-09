@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Личный кабинет и сообщения — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="cabinet">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader" class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">NORD<span>3D</span></a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="order.html">Разместить заказ</a>
+        <a href="printers.html">Исполнители</a>
+        <a href="cabinet.html" class="active">💬 Сообщения</a>
+      </nav>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">🌙</button>
+        <button class="btn btn--small btn--primary" id="loginBtn">Войти</button>
+        <button class="burger" id="burger" aria-label="Меню">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="cabinet-wrap">
+    <div class="container cabinet-container">
+
+      <!-- Левая колонка: Профиль + Список диалогов / заказов -->
+      <aside class="cab-sidebar">
+        <!-- Блок пользователя -->
+        <div class="cab-user-card" id="cabUserCard">
+          <!-- Заполняется в cabinet.js -->
+        </div>
+
+        <!-- Поиск по диалогам -->
+        <div class="cab-search-box" id="cabSearchBox">
+          <input type="text" id="chatSearch" placeholder="🔍 Поиск диалога или заказа..." />
+        </div>
+
+        <!-- Список чатов (как на FunPay) -->
+        <div class="cab-dialog-list" id="cabDialogList">
+          <!-- Заполняется в cabinet.js -->
+        </div>
+      </aside>
+
+      <!-- Правая колонка: Чат с деталями заказа -->
+      <main class="cab-main" id="cabMain">
+        <!-- Заполняется в cabinet.js -->
+      </main>
+
+    </div>
+  </div>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="cards.js"></script>
+  <script src="cabinet.js"></script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NORD 3D · Панель администратора платформы</title>
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+</head>
+<body data-page="admin">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header class="header">
+    <div class="container header__inner">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="index.html" class="logo">NORD<span>3D</span></a>
+        <span class="admin-badge">⚡ АДМИН-ПАНЕЛЬ</span>
+      </div>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему" aria-label="Тема">🌙</button>
+        <a href="index.html" class="btn btn--ghost btn--small">← На сайт</a>
+        <button class="btn btn--small btn--primary" id="adminLogoutTopBtn" style="display:none">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:32px;padding-bottom:60px">
+    <!-- ЭКРАН АВТОРИЗАЦИИ АДМИНИСТРАТОРА -->
+    <div id="adminAuthBox" style="max-width:440px;margin:60px auto;background:var(--bg-card);border:1.5px solid var(--border);border-radius:20px;padding:36px;box-shadow:var(--shadow-lg);text-align:center">
+      <div style="width:64px;height:64px;border-radius:18px;background:rgba(14,165,233,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px">
+        🔐
+      </div>
+      <h2 style="font-size:22px;margin-bottom:8px">Вход в панель управления</h2>
+      <p class="muted" style="font-size:13.5px;margin-bottom:24px">
+        Управление заказами, анкетами мастеров, клиентами и системными бэкапами NORD 3D Норильск.
+      </p>
+
+      <form id="adminLoginForm" style="display:flex;flex-direction:column;gap:14px;text-align:left">
+        <div class="field">
+          <label>Пароль администратора</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="adminPassInput" placeholder="Введите пароль..." required autofocus />
+          </div>
+          <small class="field-hint">По умолчанию: <b>admin3d</b></small>
+        </div>
+
+        <p class="form-msg err" id="adminAuthErr" style="margin:0"></p>
+
+        <button type="submit" class="btn btn--primary btn--wide" style="height:48px;font-size:15px;font-weight:700;border-radius:12px">
+          Войти как администратор
+        </button>
+
+        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;display:flex;flex-direction:column;gap:8px">
+          <button type="button" class="btn btn--ghost btn--wide" id="quickLoginBtn" style="font-size:13px">
+            ⚡ Быстрый вход (в 1 клик)
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ОСНОВНАЯ ПАНЕЛЬ УПРАВЛЕНИЯ -->
+    <div id="adminAppBox" style="display:none">
+      <!-- ДАШБОРД KPI -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 style="font-size:26px;margin-bottom:4px">Панель управления NORD 3D</h1>
+          <p class="muted" style="font-size:13.5px">Центр мониторинга и администрирования 3D-печати и сканирования в Норильском промышленном районе</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="badge" id="serverStatusBadge" style="background:var(--bg-subtle);border:1px solid var(--border);font-size:12px;padding:6px 12px">
+            Проверка связи с сервером...
+          </span>
+          <button class="btn btn--ghost btn--small" id="refreshAllBtn">↺ Обновить данные</button>
+        </div>
+      </div>
+
+      <!-- СЕТКА МЕТРИК -->
+      <div class="admin-stats-grid">
+        <div class="stat-widget">
+          <div class="stat-widget__head">
+            <span class="stat-widget__title">Всего заказов</span>
+            <span class="stat-widget__icon">📦</span>
+          </div>
+          <div class="stat-widget__value" id="kpiOrdersCount">0</div>
+          <div class="stat-widget__hint" id="kpiOrdersSum">Общий бюджет: 0 ₽</div>
+        </div>
+
+        <div class="stat-widget">
+          <div class="stat-widget__head">
+            <span class="stat-widget__title">Категории заказов</span>
+            <span class="stat-widget__icon">🔬</span>
+          </div>
+          <div class="stat-widget__value" id="kpiOrdersRatio">0 / 0</div>
+          <div class="stat-widget__hint" id="kpiOrdersRatioHint">🖨️ 0 печать · 🔬 0 скан</div>
+        </div>
+
+        <div class="stat-widget">
+          <div class="stat-widget__head">
+            <span class="stat-widget__title">Мастера (Исполнители)</span>
+            <span class="stat-widget__icon">🛠️</span>
+          </div>
+          <div class="stat-widget__value" id="kpiPrintersCount">0</div>
+          <div class="stat-widget__hint" id="kpiPrintersVerified">Верифицировано: 0</div>
+        </div>
+
+        <div class="stat-widget">
+          <div class="stat-widget__head">
+            <span class="stat-widget__title">Заказчики в базе</span>
+            <span class="stat-widget__icon">👥</span>
+          </div>
+          <div class="stat-widget__value" id="kpiCustomersCount">0</div>
+          <div class="stat-widget__hint" id="kpiChatsCount">Активных чатов: 0</div>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКИ -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="orders">
+          📦 Заказы (<span id="badgeTabOrders">0</span>)
+        </button>
+        <button class="admin-tab" data-tab="printers">
+          🛠️ Мастера (<span id="badgeTabPrinters">0</span>)
+        </button>
+        <button class="admin-tab" data-tab="customers">
+          👥 Заказчики (<span id="badgeTabCustomers">0</span>)
+        </button>
+        <button class="admin-tab" data-tab="monetization">
+          💰 Монетизация
+        </button>
+        <button class="admin-tab" data-tab="system">
+          ⚙️ Система и бэкап
+        </button>
+      </div>
+
+      <!-- ВКЛАДКА 1: ЗАКАЗЫ -->
+      <div id="tabContent_orders" class="admin-tab-pane">
+        <div class="admin-table-wrap">
+          <div class="admin-table-toolbar">
+            <div class="input-with-icon" style="flex:1;min-width:240px">
+              <span class="input-icon">🔍</span>
+              <input type="text" id="orderSearchInp" placeholder="Поиск по названию, клиенту, телефону, району..." />
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <select id="orderStatusFilter" style="width:auto">
+                <option value="">Все статусы</option>
+                <option value="open">🟢 Ищет мастера</option>
+                <option value="in_work">🟡 В работе</option>
+                <option value="done">✅ Выполнен</option>
+                <option value="cancelled">⚪ Отменён</option>
+              </select>
+              <select id="orderTypeFilter" style="width:auto">
+                <option value="">Все типы</option>
+                <option value="print">🖨️ 3D-печать</option>
+                <option value="scan">🔬 3D-сканирование</option>
+              </select>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:70px">ID</th>
+                <th>Название заказа</th>
+                <th>Тип</th>
+                <th>Клиент / Телефон</th>
+                <th>Район</th>
+                <th>Бюджет</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th style="width:130px;text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <!-- Заполняется в admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 2: МАСТЕРА -->
+      <div id="tabContent_printers" class="admin-tab-pane" style="display:none">
+        <div class="admin-table-wrap">
+          <div class="admin-table-toolbar">
+            <div class="input-with-icon" style="flex:1;min-width:240px">
+              <span class="input-icon">🔍</span>
+              <input type="text" id="printerSearchInp" placeholder="Поиск по имени мастера, телефону, оборудованию..." />
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <select id="printerDistrictFilter" style="width:auto">
+                <option value="">Все районы</option>
+                <option value="Норильск">Норильск</option>
+                <option value="Талнах">Талнах</option>
+                <option value="Кайеркан">Кайеркан</option>
+                <option value="Оганер">Оганер</option>
+                <option value="Дудинка">Дудинка</option>
+              </select>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Мастер / Студия</th>
+                <th>Телефон</th>
+                <th>Район</th>
+                <th>Оборудование</th>
+                <th>Рейтинг</th>
+                <th>Заказов</th>
+                <th>Верификация</th>
+                <th>Статус</th>
+                <th style="width:180px;text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="printersTableBody">
+              <!-- Заполняется в admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 3: ЗАКАЗЧИКИ -->
+      <div id="tabContent_customers" class="admin-tab-pane" style="display:none">
+        <div class="admin-table-wrap">
+          <div class="admin-table-toolbar">
+            <div class="input-with-icon" style="flex:1;min-width:240px">
+              <span class="input-icon">🔍</span>
+              <input type="text" id="custSearchInp" placeholder="Поиск заказчика по имени, телефону, Telegram/VK..." />
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Заказчик</th>
+                <th>Телефон</th>
+                <th>Соцсеть (VK / TG)</th>
+                <th>Район</th>
+                <th>Заказов в системе</th>
+                <th>Сумма заказов</th>
+                <th style="width:130px;text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <!-- Заполняется в admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 4: МОНЕТИЗАЦИЯ (МОДЕЛИ 1 И 3) -->
+      <div id="tabContent_monetization" class="admin-tab-pane" style="display:none">
+        <!-- ФИНАНСОВЫЕ KPI КАРТОЧКИ -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:24px">
+          <div class="revenue-card" style="border-left:4px solid #10b981">
+            <div class="revenue-card__head">
+              <span class="revenue-card__title">Общий доход платформы</span>
+              <span class="revenue-card__icon" style="background:rgba(16,185,129,0.15);color:#10b981">💰</span>
+            </div>
+            <div class="revenue-card__value" id="revTotalPlatform">0 ₽</div>
+            <div class="revenue-card__hint" id="revTotalPlatformHint">Комиссия гаранта + опции Boost</div>
+          </div>
+
+          <div class="revenue-card" style="border-left:4px solid #0284c7">
+            <div class="revenue-card__head">
+              <span class="revenue-card__title">Доход с Безопасных сделок</span>
+              <span class="revenue-card__icon" style="background:rgba(2,132,199,0.15);color:#0284c7">🛡️</span>
+            </div>
+            <div class="revenue-card__value" id="revEscrowFees">0 ₽</div>
+            <div class="revenue-card__hint" id="revEscrowFeesHint">Удержанная комиссия сервиса</div>
+          </div>
+
+          <div class="revenue-card" style="border-left:4px solid #f59e0b">
+            <div class="revenue-card__head">
+              <span class="revenue-card__title">Выручка от Boost-опций</span>
+              <span class="revenue-card__icon" style="background:rgba(245,158,11,0.15);color:#f59e0b">⚡</span>
+            </div>
+            <div class="revenue-card__value" id="revBoostRevenue">0 ₽</div>
+            <div class="revenue-card__hint" id="revBoostRevenueHint">Срочность 24ч, приватность, 3D</div>
+          </div>
+
+          <div class="revenue-card" style="border-left:4px solid #8b5cf6">
+            <div class="revenue-card__head">
+              <span class="revenue-card__title">Охват монетизации</span>
+              <span class="revenue-card__icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6">📊</span>
+            </div>
+            <div class="revenue-card__value" id="revOrdersCount">0 из 0</div>
+            <div class="revenue-card__hint" id="revOrdersCountHint">Заказов с платными функциями</div>
+          </div>
+        </div>
+
+        <!-- УПРАВЛЕНИЕ В 1 КЛИК: 2 ОСНОВНЫЕ МОДЕЛИ МОНЕТИЗАЦИИ -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:24px;margin-bottom:28px">
+          
+          <!-- МОДЕЛЬ 1: БЕЗОПАСНАЯ СДЕЛКА (ESCROW) -->
+          <div class="form-card-block" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,0.15);color:#10b981;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+                    🛡️
+                  </div>
+                  <div>
+                    <h3 style="margin:0;font-size:16px">Модель 1: Безопасная сделка</h3>
+                    <small class="muted">Escrow / Гарант платежей NORD 3D</small>
+                  </div>
+                </div>
+
+                <!-- 1-КЛИК ПЕРЕКЛЮЧАТЕЛЬ -->
+                <div class="switch-control">
+                  <label class="switch-ui" title="Включить / выключить Безопасную сделку в 1 клик">
+                    <input type="checkbox" id="toggleEscrowMaster" checked />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-status-pill active" id="pillEscrowStatus">🟢 Вкл</span>
+                </div>
+              </div>
+
+              <p class="muted" style="font-size:13px;line-height:1.5;margin-bottom:16px">
+                Клиент холдирует бюджет заказа при создании. Деньги защищены на стороне NORD 3D. Выплата мастеру происходит только после проверки и приёмки клиентом, а платформа удерживает процент комиссии.
+              </p>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;background:var(--bg-subtle);padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px">
+                <div class="field" style="margin:0">
+                  <label style="font-size:12px">Комиссия сервиса (%)</label>
+                  <div class="input-with-icon has-suffix">
+                    <span class="input-icon">📊</span>
+                    <input type="number" id="inputEscrowCommission" min="1" max="50" step="1" value="10" />
+                    <span class="input-suffix">%</span>
+                  </div>
+                </div>
+                <div class="field" style="margin:0">
+                  <label style="font-size:12px">Мин. заказ гаранта</label>
+                  <div class="input-with-icon has-suffix">
+                    <span class="input-icon">💳</span>
+                    <input type="number" id="inputEscrowMinAmount" min="100" step="50" value="500" />
+                    <span class="input-suffix">₽</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="font-size:12px;color:var(--text-muted);background:rgba(16,185,129,0.06);border:1px dashed rgba(16,185,129,0.3);padding:10px 12px;border-radius:10px">
+                💡 <b>Защита двух сторон:</b> Мастер спокоен за оплату сырья и работы, а клиент защищён от брака и срыва сроков.
+              </div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;justify-content:flex-end">
+              <button class="btn btn--small btn--primary" id="btnSaveEscrowSettings">Сохранить тариф комиссии</button>
+            </div>
+          </div>
+
+          <!-- МОДЕЛЬ 3: ПЛАТНЫЕ ОПЦИИ ЗАКАЗЧИКОВ (BOOST) -->
+          <div class="form-card-block" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.15);color:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+                    ⚡
+                  </div>
+                  <div>
+                    <h3 style="margin:0;font-size:16px">Модель 3: Опции заказчиков</h3>
+                    <small class="muted">Boost, Срочность 24ч, Приватность</small>
+                  </div>
+                </div>
+
+                <!-- 1-КЛИК ПЕРЕКЛЮЧАТЕЛЬ -->
+                <div class="switch-control">
+                  <label class="switch-ui" title="Включить / выключить платные опции Boost в 1 клик">
+                    <input type="checkbox" id="toggleBoostMaster" checked />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-status-pill active" id="pillBoostStatus">🟢 Вкл</span>
+                </div>
+              </div>
+
+              <p class="muted" style="font-size:13px;line-height:1.5;margin-bottom:16px">
+                Заказчик может докупить приоритетное размещение в бирже, скрытие своих персональных данных или доработку 3D-модели мастером. Плата добавляется к заказу.
+              </p>
+
+              <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;background:var(--bg-subtle);padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px">
+                <div class="field" style="margin:0">
+                  <label style="font-size:11px" title="Срочный заказ 24ч">⚡ Срочно 24ч</label>
+                  <div class="input-with-icon has-suffix">
+                    <span class="input-icon">⚡</span>
+                    <input type="number" id="inputUrgentPrice" min="50" step="50" value="250" />
+                    <span class="input-suffix">₽</span>
+                  </div>
+                </div>
+                <div class="field" style="margin:0">
+                  <label style="font-size:11px" title="Приватный заказ">🔒 Приватно</label>
+                  <div class="input-with-icon has-suffix">
+                    <span class="input-icon">🔒</span>
+                    <input type="number" id="inputPrivatePrice" min="50" step="50" value="150" />
+                    <span class="input-suffix">₽</span>
+                  </div>
+                </div>
+                <div class="field" style="margin:0">
+                  <label style="font-size:11px" title="3D-моделирование">📐 3D-модель</label>
+                  <div class="input-with-icon has-suffix">
+                    <span class="input-icon">📐</span>
+                    <input type="number" id="inputModelingPrice" min="100" step="50" value="500" />
+                    <span class="input-suffix">₽</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="font-size:12px;color:var(--text-muted);background:rgba(245,158,11,0.06);border:1px dashed rgba(245,158,11,0.3);padding:10px 12px;border-radius:10px">
+                💡 <b>Ценность для клиента:</b> Срочные заказы выделяются ярким золотым неоновым свечением и навсегда закрепляются первыми в ленте биржи.
+              </div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;justify-content:flex-end">
+              <button class="btn btn--small btn--primary" id="btnSaveBoostSettings">Сохранить расценки Boost</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ТАБЛИЦА ЗАКАЗОВ С МОНЕТИЗАЦИЕЙ -->
+        <div class="admin-table-wrap">
+          <div class="admin-table-toolbar">
+            <div style="display:flex;align-items:center;gap:10px">
+              <h4 style="margin:0;font-size:15px">Реестр сделок с монетизацией (Гарант + Boost)</h4>
+              <span class="badge" id="monetizedOrdersCountBadge" style="background:var(--bg-subtle);border:1px solid var(--border)">0 сделок</span>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:70px">ID</th>
+                <th>Заказ</th>
+                <th>Заказчик</th>
+                <th>Сумма сделки</th>
+                <th>Безопасная сделка (Гарант)</th>
+                <th>Платные опции Boost</th>
+                <th>Доход платформы</th>
+                <th style="width:130px;text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="monetizationTableBody">
+              <!-- Заполняется в admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ВКЛАДКА 5: СИСТЕМА И БЭКАП -->
+      <div id="tabContent_system" class="admin-tab-pane" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:20px">
+          <!-- Резервное копирование -->
+          <div class="form-card-block">
+            <div class="form-block-head">
+              <span class="badge-num">💾</span>
+              <div>
+                <h4>Экспорт и импорт базы данных</h4>
+                <small>Полная выгрузка базы заказов, мастеров и чатов в JSON</small>
+              </div>
+            </div>
+            <p class="muted" style="font-size:13.5px;margin-bottom:16px">
+              Выгрузите резервную копию перед обновлениями или перенесите данные на рабочий хостинг.
+            </p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn--primary" id="btnExportJson" style="height:44px;font-weight:700">
+                📥 Скачать JSON-бэкап базы
+              </button>
+              <label class="btn btn--ghost" style="height:44px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                📤 Восстановить базу из файла JSON
+                <input type="file" id="btnImportJson" accept=".json" style="display:none" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Сброс демо-данных -->
+          <div class="form-card-block">
+            <div class="form-block-head">
+              <span class="badge-num">↺</span>
+              <div>
+                <h4>Сброс данных и эталон</h4>
+                <small>Восстановление исходных проверенных норильских мастеров и заказов</small>
+              </div>
+            </div>
+            <p class="muted" style="font-size:13.5px;margin-bottom:16px">
+              Возвращает платформу к проверенному эталонному состоянию с 8 мастерами, реальными расценками и 4 заказами.
+            </p>
+            <button class="btn btn-action--danger btn--wide" id="btnResetDemoData" style="height:44px;font-weight:700">
+              ↺ Сбросить к эталонным демо-данным
+            </button>
+          </div>
+
+          <!-- Бэкенд и хостинг -->
+          <div class="form-card-block" style="grid-column:1 / -1">
+            <div class="form-block-head">
+              <span class="badge-num">🚀</span>
+              <div>
+                <h4>Состояние локального / облачного бэкенда</h4>
+                <small>Мониторинг REST API и синхронизации</small>
+              </div>
+            </div>
+            <div id="backendStatsOutput" style="font-family:monospace;font-size:13px;background:var(--bg-subtle);padding:14px;border-radius:10px;border:1px solid var(--border);white-space:pre-wrap;margin-bottom:12px">
+Загрузка информации о сервере...
+            </div>
+            <button class="btn btn--ghost btn--small" id="btnCheckBackendHealth">Проверить /api/health и /api/stats</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="admin.js?v=15"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# NORD 3D — Production Slicer Microservice (PrusaSlicer CLI in Docker)
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Установка PrusaSlicer, Xvfb и библиотек OpenGL
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    prusa-slicer \
+    xvfb \
+    libglu1-mesa \
+    libgl1-mesa-dri \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /slicer
+
+# Рабочие директории
+RUN mkdir -p /slicer/profiles /slicer/temp
+
+# Запуск от непривилегированного пользователя
+RUN useradd -u 1001 -m sliceruser && chown -R sliceruser:sliceruser /slicer
+USER sliceruser
+
+# Точка входа для нарезки моделей в headless режиме
+ENTRYPOINT ["xvfb-run", "-a", "prusa-slicer"]

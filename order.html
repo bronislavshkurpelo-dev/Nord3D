@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Разместить заказ — NORD 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=17" />
+  <script>
+    (function() {
+      const t = localStorage.getItem("n3d_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body data-page="order">
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+  <header id="siteHeader" class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">NORD<span>3D</span></a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Главная</a>
+        <a href="order.html" class="active">Разместить заказ</a>
+        <a href="printers.html">Исполнители</a>
+      </nav>
+      <div class="userbox">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему (светлая / тёмная)" aria-label="Тема">🌙</button>
+        <button class="btn btn--small btn--primary" id="loginBtn">Войти</button>
+        <button class="burger" id="burger" aria-label="Меню">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-banner">
+    <div class="container">
+      <h1>Разместить заказ на 3D-печать</h1>
+      <p>Загрузите модель STL или 3MF — мы посчитаем ориентир по объёму, а мастера Норильска предложат свои цены.</p>
+    </div>
+  </section>
+
+  <main class="section section--tight">
+    <div class="container">
+      <div class="invite" id="invite" hidden></div>
+
+      <form id="orderForm" class="order-form" novalidate>
+        <div class="order-form__left">
+          <label id="dropzone" class="dropzone">
+            <input type="file" id="fileInput" accept=".stl,.3mf" hidden />
+            <canvas id="preview"></canvas>
+            <div class="dropzone__hint" id="dropHint">
+              <div class="dropzone__icon">⬆</div>
+              <b>Перетащите сюда 3D-модель</b>
+              <span>STL или 3MF файл до 100 МБ</span>
+            </div>
+          </label>
+          <div class="hint-small" id="rotateHint" hidden>🖱️ Зажмите для вращения • Колёсико — зум • Двойной клик — сброс</div>
+
+          <div class="model-info" id="modelInfo" hidden>
+            <div><span>Файл</span><b id="infoName">—</b></div>
+            <div><span>Габариты</span><b id="infoSize">—</b></div>
+            <div><span>Объём</span><b id="infoVolume">—</b></div>
+            <div><span>Полигонов</span><b id="infoTris">—</b></div>
+          </div>
+          <p class="warn" id="modelWarn" hidden></p>
+
+          <!-- Блок результатов серверного слайсера PrusaSlicer -->
+          <div class="slicer-box" id="slicerResultBox" hidden>
+            <div class="slicer-box__header">
+              <span class="slicer-box__badge">⚙️ Нарезка PrusaSlicer CLI</span>
+              <span class="slicer-box__time" id="slicerTime">—</span>
+            </div>
+            <div class="slicer-box__details">
+              <div><span>Расход филамента:</span> <b id="slicerWeight">—</b></div>
+              <div><span>Длина нити:</span> <b id="slicerMeters">—</b></div>
+              <div><span>Слоёв (0.20 мм):</span> <b id="slicerLayers">—</b></div>
+            </div>
+            <div class="slicer-box__actions" id="slicerDownloadBox" hidden>
+              <a href="#" id="btnDownloadGcode" class="btn btn--small btn--ghost" download>
+                📥 Скачать готовый G-Code
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-form__right">
+          <div class="field">
+            <label for="title">Что печатаем?</label>
+            <input type="text" id="title" placeholder="Кронштейн для снегохода, шестерня, фигурка..." required />
+          </div>
+
+          <div class="field">
+            <label>Материал</label>
+            <div class="mat-selector" id="matSelector">
+              <label><input type="radio" name="material" value="PLA" checked><span><b>PLA</b><small>Корпуса, макеты</small></span></label>
+              <label><input type="radio" name="material" value="PETG"><span><b>PETG</b><small>Прочный, уличный</small></span></label>
+              <label><input type="radio" name="material" value="ABS"><span><b>ABS</b><small>Термостойкий</small></span></label>
+              <label><input type="radio" name="material" value="TPU"><span><b>TPU</b><small>Гибкий / резина</small></span></label>
+              <label><input type="radio" name="material" value="RESIN"><span><b>Фотополимер</b><small>Высокая детализация</small></span></label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="color">Цвет</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🎨</span>
+                <select id="color">
+                  <option>Чёрный</option><option>Белый</option><option>Серый</option>
+                  <option>Красный</option><option>Синий</option><option>Оранжевый</option>
+                  <option>Прозрачный</option><option>Многоцвет</option><option>Любой</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="quantity">Количество</label>
+              <div class="input-with-icon has-suffix">
+                <span class="input-icon">🔢</span>
+                <input type="number" id="quantity" min="1" max="500" value="1" />
+                <span class="input-suffix">шт.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field" id="infillField">
+            <label for="infill">Заполнение: <b id="infillVal">20%</b></label>
+            <input type="range" id="infill" min="10" max="100" step="5" value="20" />
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="deadline">Нужно к дате</label>
+              <div class="input-with-icon">
+                <span class="input-icon">📅</span>
+                <input type="date" id="deadline" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="district">Район получения</label>
+              <div class="input-with-icon">
+                <span class="input-icon">📍</span>
+                <select id="district"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="estimate-box">
+            <span>Ориентировочная стоимость печати:</span>
+            <b id="estimate">загрузите модель</b>
+            <small id="estimateNote">Рассчитывается по объёму модели</small>
+          </div>
+
+          <div class="field">
+            <label for="budget">Ваш бюджет (₽)</label>
+            <div class="input-with-icon has-suffix">
+              <span class="input-icon">💰</span>
+              <input type="number" id="budget" min="100" step="50" placeholder="Подставится автоматически" />
+              <span class="input-suffix">₽</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="comment">Комментарий к заказу</label>
+            <div class="input-with-icon input-with-icon--textarea">
+              <span class="input-icon">💬</span>
+              <textarea id="comment" rows="2" placeholder="Особые требования к прочности, усадке, температуре..."></textarea>
+            </div>
+          </div>
+
+          <!-- БЛОК МОНЕТИЗАЦИИ: ОПЦИИ И БЕЗОПАСНАЯ СДЕЛКА -->
+          </div>
+
+        <!-- БЛОК МОНЕТИЗАЦИИ: ОПЦИИ И БЕЗОПАСНАЯ СДЕЛКА НА ВСЮ ШИРИНУ -->
+        <div class="order-form__footer" style="grid-column: 1 / -1; width: 100%; display: flex; flex-direction: column; gap: 16px; margin-top: 14px;">
+          <div id="monetizationContainer"></div>
+          <button type="submit" class="btn btn--wide btn--primary" style="height:52px;font-size:16px;font-weight:800;border-radius:12px">Опубликовать заказ</button>
+          <p class="form-msg" id="formMsg"></p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer id="siteFooter"></footer>
+
+  <script src="core.js?v=17"></script>
+  <script src="model.js"></script>
+  <script src="order.js"></script>
+</body>
+</html>
+
