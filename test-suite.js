@@ -95,11 +95,11 @@ test('Image assets exist and have valid sizes', () => {
   });
 });
 
-test('All HTML files have stylesheet link with current cache version ?v=19', () => {
+test('All HTML files have stylesheet link with current cache version ?v=21', () => {
   const htmlFiles = ['index.html', 'order.html', 'scan.html', 'orders.html', 'printers.html', 'cabinet.html', 'wallet.html', 'rating.html'];
   htmlFiles.forEach(f => {
     const content = fs.readFileSync(path.join(DIR, f), 'utf8');
-    assert.ok(content.includes('styles.css?v=19'), `${f} missing styles.css?v=19`);
+    assert.ok(content.includes('styles.css?v=21'), `${f} missing styles.css?v=21`);
   });
 });
 
@@ -1771,6 +1771,102 @@ test('Chat threads resolve real names and strip phantom test messages', () => {
   assert.ok(cabinetJs.includes('getOtherParty'), 'cabinet.js must use getOtherParty helper');
   assert.ok(cabinetJs.includes('Hello'), 'cabinet.js must filter phantom test messages');
   assert.ok(coreJs.includes('resolveCustomerName') && coreJs.includes('resolvePrinterName'), 'core.js must implement name resolution helpers');
+});
+
+console.log('\n--- 34. Mobile Visual Protection, CSS Integrity & Dialogue Consolidation ---');
+
+test('styles.css has zero rogue braces and strict depth balance', () => {
+  const css = fs.readFileSync(path.join(DIR, 'styles.css'), 'utf8');
+  let clean = '';
+  let inComment = false;
+  let inString = false;
+  let strQuote = '';
+
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    const next = css[i+1];
+    if (!inComment && !inString && c === '/' && next === '*') { inComment = true; clean += '  '; i++; continue; }
+    if (inComment && c === '*' && next === '/') { inComment = false; clean += '  '; i++; continue; }
+    if (inComment) { clean += (c === '\n' ? '\n' : ' '); continue; }
+    if (!inString && (c === '"' || c === "'")) { inString = true; strQuote = c; clean += ' '; continue; }
+    if (inString && c === strQuote && css[i-1] !== '\\') { inString = false; clean += ' '; continue; }
+    if (inString) { clean += (c === '\n' ? '\n' : ' '); continue; }
+    clean += c;
+  }
+
+  let depth = 0;
+  for (let ch of clean) {
+    if (ch === '{') depth++;
+    if (ch === '}') {
+      depth--;
+      assert.ok(depth >= 0, 'No rogue closing braces in styles.css');
+    }
+  }
+  assert.strictEqual(depth, 0, 'All CSS blocks must be cleanly closed');
+});
+
+test('Chat.canonicalizePair and Chat.getThread prevent inverted thread duplicate creation', () => {
+  const { Chat, DB } = window.N3D;
+  const masterId = 'p_dedup_master';
+  const customerId = 'c_dedup_cust';
+  // Mock master in DB
+  const originalPrinters = DB.printers();
+  const printers = [...originalPrinters, { id: masterId, name: 'Мастер Тест' }];
+  localStorage.setItem('n3d_printers', JSON.stringify(printers));
+
+  // Canonicalization check
+  const pair1 = Chat.canonicalizePair(customerId, masterId);
+  const pair2 = Chat.canonicalizePair(masterId, customerId);
+  assert.strictEqual(pair1.customerId, customerId);
+  assert.strictEqual(pair1.printerId, masterId);
+  assert.strictEqual(pair2.customerId, customerId);
+  assert.strictEqual(pair2.printerId, masterId);
+
+  // Restore DB
+  localStorage.setItem('n3d_printers', JSON.stringify(originalPrinters));
+});
+
+test('Chat.getAllUserThreads consolidates fragmented threads for the same contact pair into one single dialogue', () => {
+  const { Chat, DB } = window.N3D;
+  const custId = 'c_pair_test';
+  const masterId = 'p_pair_test';
+  const chats = DB.chats();
+
+  // Create two separate threads for the same pair (e.g. one from direct, one from an order)
+  const threadDirect = `${custId}__${masterId}__direct`;
+  const threadOrder = `${custId}__${masterId}__ord_unified`;
+
+  chats[threadDirect] = {
+    customerId: custId,
+    printerId: masterId,
+    orderId: null,
+    customerName: 'Евгений П.',
+    printerName: 'Мастер Иван',
+    messages: [{ id: 'm_dir_1', from: custId, text: 'Привет, печатаете ли шестерни?', t: 1000 }]
+  };
+
+  chats[threadOrder] = {
+    customerId: custId,
+    printerId: masterId,
+    orderId: 'ord_unified',
+    customerName: 'Евгений П.',
+    printerName: 'Мастер Иван',
+    messages: [{ id: 'm_ord_1', from: masterId, text: 'Да, заказ принят в работу!', t: 2000 }]
+  };
+  DB.saveChats(chats);
+
+  const threads = Chat.getAllUserThreads(custId);
+  const userThreadsForPair = threads.filter(t => (t.customerId === custId && t.printerId === masterId) || (t.customerId === masterId && t.printerId === custId));
+
+  assert.strictEqual(userThreadsForPair.length, 1, 'Should consolidate duplicate dialogues into exactly one thread');
+  assert.strictEqual(userThreadsForPair[0].messages.length, 2, 'Consolidated thread should merge messages from both sources in order');
+  assert.strictEqual(userThreadsForPair[0].messages[0].id, 'm_dir_1');
+  assert.strictEqual(userThreadsForPair[0].messages[1].id, 'm_ord_1');
+
+  // Clean up
+  delete chats[threadDirect];
+  delete chats[threadOrder];
+  DB.saveChats(chats);
 });
 
 // ----------------------------------------------------

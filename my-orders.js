@@ -499,8 +499,8 @@
 
         if (o.customerId) {
           Chat.sendMessage(
-            currentUser.id,
             o.customerId,
+            currentUser.id,
             o.id,
             `👋 Здравствуйте! Я принял ваш заказ #${o.id} («${o.title}»). Готов выполнить печать за ${money(o.budget)}. Вы можете утвердить сделку в разделе «Мои заказы»!`
           );
@@ -525,8 +525,8 @@
 
         if (o.customerId) {
           Chat.sendMessage(
-            currentUser.id,
             o.customerId,
+            currentUser.id,
             o.id,
             `📦 Заказ #${o.id} («${o.title}») полностью напечатан и готов к выдаче! Вы можете забрать готовые детали или согласовать доставку.`
           );

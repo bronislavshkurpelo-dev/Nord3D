@@ -1301,10 +1301,46 @@
 
   // ---------- Чат и диалоги ----------
   const Chat = {
-    getThread(customerId, printerId, orderId) {
-      const key = `${customerId}__${printerId}__${orderId || "direct"}`;
+    canonicalizePair(userA, userB) {
+      if (!userA || !userB) return { customerId: userA || "", printerId: userB || "" };
+      const isMasterA = !!DB.printer(userA) || String(userA).startsWith("p");
+      const isMasterB = !!DB.printer(userB) || String(userB).startsWith("p");
+      const isCustA = String(userA).startsWith("c");
+      const isCustB = String(userB).startsWith("c");
+
+      if (isMasterA && !isMasterB) {
+        return { customerId: userB, printerId: userA };
+      }
+      if (isMasterB && !isMasterA) {
+        return { customerId: userA, printerId: userB };
+      }
+      if (isCustA && !isCustB) {
+        return { customerId: userA, printerId: userB };
+      }
+      if (isCustB && !isCustA) {
+        return { customerId: userB, printerId: userA };
+      }
+      return { customerId: userA, printerId: userB };
+    },
+    getThread(userA, userB, orderId) {
+      const { customerId, printerId } = Chat.canonicalizePair(userA, userB);
       const chats = DB.chats();
+      let key = `${customerId}__${printerId}__${orderId || "direct"}`;
       let thread = chats[key];
+
+      // If exact key doesn't exist, check if an existing thread exists between these two users
+      if (!thread) {
+        const existingKey = Object.keys(chats).find(k => {
+          const parts = k.split("__");
+          return (parts[0] === customerId && parts[1] === printerId) ||
+                 (parts[0] === printerId && parts[1] === customerId);
+        });
+        if (existingKey) {
+          key = existingKey;
+          thread = chats[key];
+        }
+      }
+
       const custName = resolveCustomerName(customerId, orderId);
       const printName = resolvePrinterName(printerId);
 
@@ -1317,6 +1353,9 @@
         chats[key] = thread;
         DB.saveChats(chats);
       } else {
+        if (!thread.customerId) thread.customerId = customerId;
+        if (!thread.printerId) thread.printerId = printerId;
+        if (orderId && !thread.orderId) thread.orderId = orderId;
         if (!thread.customerName || thread.customerName === "Заказчик") thread.customerName = custName;
         if (!thread.printerName || thread.printerName === "Мастер" || thread.printerName === "Мастер 3D-печати") thread.printerName = printName;
       }
@@ -1346,36 +1385,64 @@
     },
     getAllUserThreads(userId) {
       const chats = DB.chats();
-      const list = [];
+      const pairMap = new Map();
+
       for (const [key, raw] of Object.entries(chats)) {
         if (!raw || key.includes("ord1") || key.includes("sync_suite")) continue;
         const parts = key.split("__");
-        const customerId = raw.customerId || parts[0];
-        const printerId = raw.printerId || parts[1];
+        let customerId = raw.customerId || parts[0];
+        let printerId = raw.printerId || parts[1];
+        const canon = Chat.canonicalizePair(customerId, printerId);
+        customerId = canon.customerId;
+        printerId = canon.printerId;
+
         const orderId = raw.orderId || (parts[2] !== "direct" ? parts[2] : null);
         const messages = (Array.isArray(raw) ? raw : (Array.isArray(raw.messages) ? raw.messages : []))
           .filter(m => m && m.text !== "Hello");
 
         if (customerId === userId || printerId === userId) {
+          const pairId = [customerId, printerId].sort().join("___");
           const custName = (raw.customerName && raw.customerName !== "Заказчик") ? raw.customerName : resolveCustomerName(customerId, orderId);
           const printName = (raw.printerName && raw.printerName !== "Мастер" && raw.printerName !== "Мастер 3D-печати") ? raw.printerName : resolvePrinterName(printerId);
           const order = orderId ? DB.order(orderId) : null;
           const customerAvatar = raw.customerAvatar || order?.customerAvatar || null;
           const printerAvatar = raw.printerAvatar || DB.printer(printerId)?.avatar || null;
-          list.push({
-            key,
-            ...(typeof raw === "object" && !Array.isArray(raw) ? raw : {}),
-            customerId,
-            printerId,
-            orderId,
-            customerName: custName,
-            customerAvatar,
-            printerName: printName,
-            printerAvatar,
-            messages
-          });
+
+          if (!pairMap.has(pairId)) {
+            pairMap.set(pairId, {
+              key,
+              ...(typeof raw === "object" && !Array.isArray(raw) ? raw : {}),
+              customerId,
+              printerId,
+              orderId,
+              customerName: custName,
+              customerAvatar,
+              printerName: printName,
+              printerAvatar,
+              messages: [...messages]
+            });
+          } else {
+            const existing = pairMap.get(pairId);
+            if (orderId && !existing.orderId) existing.orderId = orderId;
+            if (customerAvatar && !existing.customerAvatar) existing.customerAvatar = customerAvatar;
+            if (printerAvatar && !existing.printerAvatar) existing.printerAvatar = printerAvatar;
+            if (custName && custName !== "Заказчик") existing.customerName = custName;
+            if (printName && printName !== "Мастер") existing.printerName = printName;
+
+            const msgIds = new Set(existing.messages.map(m => m.id || `${m.from}_${m.t}`));
+            for (const m of messages) {
+              const mid = m.id || `${m.from}_${m.t}`;
+              if (!msgIds.has(mid)) {
+                msgIds.add(mid);
+                existing.messages.push(m);
+              }
+            }
+            existing.messages.sort((a, b) => (a.t || 0) - (b.t || 0));
+          }
         }
       }
+
+      const list = Array.from(pairMap.values());
       list.sort((a, b) => {
         const la = (a.messages && a.messages[a.messages.length - 1]?.t) || 0;
         const lb = (b.messages && b.messages[b.messages.length - 1]?.t) || 0;

@@ -1564,6 +1564,12 @@ textarea:focus {
   width: 100%;
   box-sizing: border-box;
 }
+@media (max-width: 600px) {
+  .avatar-preset-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
 .avatar-preset-tile {
   cursor: pointer;
   background: var(--bg-subtle);
@@ -4716,8 +4722,6 @@ input[type="checkbox"]:checked ~ .scan-switch-btn::after {
   font-weight: 800;
   letter-spacing: -0.3px;
   white-space: nowrap;
-}
-  letter-spacing: -0.3px;
 }
 .tx-amount--plus { color: #0ca678; }
 .tx-amount--minus { color: var(--text); }
