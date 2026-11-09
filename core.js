@@ -3281,7 +3281,31 @@
           openProfileSettingsModal();
         }
       });
-      header.querySelector("#burger")?.addEventListener("click", () => header.querySelector("#nav").classList.toggle("open"));
+      const burgerBtn = header.querySelector("#burger");
+      const navMenu = header.querySelector("#nav");
+      if (burgerBtn && navMenu) {
+        burgerBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const isOpen = navMenu.classList.toggle("open");
+          burgerBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          burgerBtn.textContent = isOpen ? "✕" : "☰";
+        });
+        navMenu.querySelectorAll("a, button").forEach((el) => {
+          el.addEventListener("click", () => {
+            navMenu.classList.remove("open");
+            burgerBtn.setAttribute("aria-expanded", "false");
+            burgerBtn.textContent = "☰";
+          });
+        });
+        document.addEventListener("click", (e) => {
+          if (!header.contains(e.target)) {
+            navMenu.classList.remove("open");
+            burgerBtn.setAttribute("aria-expanded", "false");
+            burgerBtn.textContent = "☰";
+          }
+        });
+      }
 
       const updateNavBadge = () => {
         const badge = header.querySelector("#navMsgBadge");

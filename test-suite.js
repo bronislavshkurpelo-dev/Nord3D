@@ -95,11 +95,11 @@ test('Image assets exist and have valid sizes', () => {
   });
 });
 
-test('All HTML files have stylesheet link with current cache version ?v=18', () => {
+test('All HTML files have stylesheet link with current cache version ?v=19', () => {
   const htmlFiles = ['index.html', 'order.html', 'scan.html', 'orders.html', 'printers.html', 'cabinet.html', 'wallet.html', 'rating.html'];
   htmlFiles.forEach(f => {
     const content = fs.readFileSync(path.join(DIR, f), 'utf8');
-    assert.ok(content.includes('styles.css?v=18'), `${f} missing styles.css?v=18`);
+    assert.ok(content.includes('styles.css?v=19'), `${f} missing styles.css?v=19`);
   });
 });
 
@@ -1710,6 +1710,14 @@ test('core.js provides compact mobile header and mobile drawer logout option', (
   const coreJs = fs.readFileSync(path.join(DIR, 'core.js'), 'utf8');
   assert.ok(coreJs.includes('navMobileLogoutBtn'), 'core.js must render drawer logout button for mobile users');
   assert.ok(coreJs.includes('header-logout-btn'), 'core.js must tag header logout button with responsive class');
+});
+
+test('Mobile navigation drawer is fixed and header has overflow:visible to guarantee zero clipping', () => {
+  const css = fs.readFileSync(path.join(DIR, 'styles.css'), 'utf8');
+  const coreJs = fs.readFileSync(path.join(DIR, 'core.js'), 'utf8');
+  assert.ok(css.includes('position: fixed') && css.includes('z-index: 999999'), 'Mobile drawer must be fixed with top-level z-index');
+  assert.ok(css.includes('.header') && css.includes('overflow: visible !important;'), 'Header must have overflow: visible to never clip dropdown drawer');
+  assert.ok(coreJs.includes('burgerBtn') && coreJs.includes('aria-expanded'), 'Burger button must toggle aria-expanded and drawer open class');
 });
 
 // ----------------------------------------------------
