@@ -3623,6 +3623,49 @@ input[type="checkbox"]:checked ~ .scan-switch-btn::after {
   border-color: rgba(52, 211, 153, 0.45);
 }
 
+/* Сетки тарифов монетизации в админке */
+.admin-boost-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: var(--bg-subtle);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.admin-escrow-rates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  background: var(--bg-subtle);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 680px) {
+  .admin-boost-rates-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+  .admin-escrow-rates-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+  #btnSaveEscrowSettings,
+  #btnSaveBoostSettings {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
 /* ==========================================================
    КОЛОНКИ ФОРМЫ ЗАКАЗА 3D-ПЕЧАТИ
    ========================================================== */
@@ -4518,15 +4561,25 @@ input[type="checkbox"]:checked ~ .scan-switch-btn::after {
 .hold-item-card {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   background: rgba(2, 132, 199, 0.06);
   border: 1px solid rgba(56, 189, 248, 0.3);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px 18px;
+  box-sizing: border-box;
+}
+.hold-item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 .hold-item-icon {
   font-size: 24px;
-  line-height: 1;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 .hold-item-info {
   flex: 1;
@@ -4537,17 +4590,59 @@ input[type="checkbox"]:checked ~ .scan-switch-btn::after {
   font-size: 14px;
   color: var(--text);
   margin-bottom: 2px;
+  word-break: break-word;
+  line-height: 1.35;
+}
+.hold-item-info small {
+  display: block;
+  line-height: 1.4;
+  word-break: break-word;
 }
 .hold-item-right {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 .hold-item-amount {
   font-size: 18px;
   font-weight: 800;
   color: #0284c7;
   white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .hold-item-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px 14px 12px !important;
+  }
+  .hold-item-main {
+    width: 100% !important;
+    align-items: flex-start !important;
+  }
+  .hold-item-info {
+    width: 100% !important;
+  }
+  .hold-item-right {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-top: 10px !important;
+    border-top: 1px dashed rgba(56, 189, 248, 0.25) !important;
+    gap: 10px !important;
+  }
+  .hold-item-right .btn {
+    flex: 1 !important;
+    height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
 }
 
 /* Фильтры */

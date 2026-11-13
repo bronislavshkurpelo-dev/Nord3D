@@ -95,11 +95,11 @@ test('Image assets exist and have valid sizes', () => {
   });
 });
 
-test('All HTML files have stylesheet link with current cache version ?v=21', () => {
+test('All HTML files have stylesheet link with current cache version ?v=22', () => {
   const htmlFiles = ['index.html', 'order.html', 'scan.html', 'orders.html', 'printers.html', 'cabinet.html', 'wallet.html', 'rating.html'];
   htmlFiles.forEach(f => {
     const content = fs.readFileSync(path.join(DIR, f), 'utf8');
-    assert.ok(content.includes('styles.css?v=21'), `${f} missing styles.css?v=21`);
+    assert.ok(content.includes('styles.css?v=22'), `${f} missing styles.css?v=22`);
   });
 });
 
@@ -1867,6 +1867,25 @@ test('Chat.getAllUserThreads consolidates fragmented threads for the same contac
   delete chats[threadDirect];
   delete chats[threadOrder];
   DB.saveChats(chats);
+});
+
+test('Mobile layout ergonomics: admin boost grids and wallet hold cards adapt without horizontal overflow', () => {
+  const css = fs.readFileSync(path.join(DIR, 'styles.css'), 'utf8');
+  const adminHtml = fs.readFileSync(path.join(DIR, 'admin.html'), 'utf8');
+  const walletJs = fs.readFileSync(path.join(DIR, 'wallet.js'), 'utf8');
+
+  // Verify CSS responsive declarations
+  assert.ok(css.includes('.admin-boost-rates-grid'), 'styles.css must define .admin-boost-rates-grid');
+  assert.ok(css.includes('.admin-escrow-rates-grid'), 'styles.css must define .admin-escrow-rates-grid');
+  assert.ok(css.includes('.hold-item-card'), 'styles.css must define .hold-item-card');
+  assert.ok(css.includes('flex-direction: column !important') || css.includes('flex-direction: column'), 'Mobile rules must stack hold-item-card vertically');
+
+  // Verify admin.html uses responsive classes
+  assert.ok(adminHtml.includes('class="admin-boost-rates-grid"'), 'admin.html must use admin-boost-rates-grid');
+  assert.ok(adminHtml.includes('class="admin-escrow-rates-grid"'), 'admin.html must use admin-escrow-rates-grid');
+
+  // Verify wallet.js uses hold-item-main
+  assert.ok(walletJs.includes('hold-item-main'), 'wallet.js must wrap icon and info in hold-item-main');
 });
 
 // ----------------------------------------------------

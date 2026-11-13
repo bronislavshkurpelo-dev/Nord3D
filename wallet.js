@@ -202,13 +202,15 @@
 
     $("walletHoldsList").innerHTML = orders.map((o) => `
       <div class="hold-item-card">
-        <div class="hold-item-icon">🔒</div>
-        <div class="hold-item-info">
-          <b>Заказ #${esc(o.id)}: ${esc(o.title)}</b>
-          <small class="muted">
-            Статус: <b>${o.status === "in_work" ? "В производстве" : (o.status === "ready" ? "Готов к выдаче" : "Открыт")}</b> · 
-            ${isP ? `Заказчик: ${esc(o.customerName)}` : `Мастер: ${esc(DB.printer(o.printerId)?.name || "Не назначен")}`}
-          </small>
+        <div class="hold-item-main">
+          <div class="hold-item-icon">🔒</div>
+          <div class="hold-item-info">
+            <b>Заказ #${esc(o.id)}: ${esc(o.title)}</b>
+            <small class="muted">
+              Статус: <b>${o.status === "in_work" ? "В производстве" : (o.status === "ready" ? "Готов к выдаче" : "Открыт")}</b> · 
+              ${isP ? `Заказчик: ${esc(o.customerName)}` : `Мастер: ${esc(DB.printer(o.printerId)?.name || "Не назначен")}`}
+            </small>
+          </div>
         </div>
         <div class="hold-item-right">
           <div class="hold-item-amount">${money(isP ? ((o.payoutToPrinter || Math.round(o.budget * 0.9))) : o.budget)}</div>
