@@ -1,4 +1,4 @@
-// Automated Comprehensive Test Suite for NORD 3D Platform
+// Automated Comprehensive Test Suite for 3ДСосед Platform
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
@@ -60,7 +60,7 @@ global.document = {
 global.CustomEvent = class { constructor(type, detail) { this.type = type; this.detail = detail; } };
 
 console.log('====================================================');
-console.log('   NORD 3D — FULL SYSTEM AUTOMATED TEST SUITE       ');
+console.log('   3ДСосед — FULL SYSTEM AUTOMATED TEST SUITE       ');
 console.log('====================================================\n');
 
 // ----------------------------------------------------
@@ -95,11 +95,11 @@ test('Image assets exist and have valid sizes', () => {
   });
 });
 
-test('All HTML files have stylesheet link with current cache version ?v=22', () => {
+test('All HTML files have stylesheet link with current cache version ?v=23', () => {
   const htmlFiles = ['index.html', 'order.html', 'scan.html', 'orders.html', 'printers.html', 'cabinet.html', 'wallet.html', 'rating.html'];
   htmlFiles.forEach(f => {
     const content = fs.readFileSync(path.join(DIR, f), 'utf8');
-    assert.ok(content.includes('styles.css?v=22'), `${f} missing styles.css?v=22`);
+    assert.ok(content.includes('styles.css?v=23'), `${f} missing styles.css?v=23`);
   });
 });
 

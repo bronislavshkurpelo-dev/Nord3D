@@ -1,4 +1,4 @@
-// NORD 3D · Панель администратора
+// 3ДСосед · Панель администратора
 // Полноценный CRUD для заказов, мастеров, заказчиков и резервных копий
 
 (function () {
@@ -25,7 +25,7 @@
       if (!u || u.role !== "admin") {
         window.N3D?.DB?.setUser({
           id: "admin_nord3d",
-          name: "Администратор NORD 3D",
+          name: "Администратор 3ДСосед",
           phone: "+7 (999) 000-00-01",
           role: "admin",
           email: "admin@nord3d.ru",
@@ -943,7 +943,7 @@
   function exportBackup() {
     loadData();
     const backup = {
-      platform: "NORD 3D Norilsk",
+      platform: "3ДСосед Norilsk",
       exportedAt: new Date().toISOString(),
       orders: ordersCache,
       printers: printersCache,
@@ -970,7 +970,7 @@
       try {
         const json = JSON.parse(evt.target.result);
         if (!json.orders || !json.printers) {
-          throw new Error("Неверный формат бэкапа NORD 3D");
+          throw new Error("Неверный формат бэкапа 3ДСосед");
         }
 
         window.N3D.DB.saveOrders(json.orders);

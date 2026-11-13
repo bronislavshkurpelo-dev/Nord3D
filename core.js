@@ -1,4 +1,4 @@
-// NORD 3D — общее ядро: база данных, раздельная авторизация, онлайн-присутствие, чат, модалки
+// 3ДСосед — общее ядро: база данных, раздельная авторизация, онлайн-присутствие, чат, модалки
 (() => {
   "use strict";
 
@@ -19,7 +19,7 @@
 
   // ---------- Настройки монетизации (Безопасная сделка + Платные опции заказчиков) ----------
   const DEFAULT_MONETIZATION = {
-    escrowEnabled: true,            // Модель 1: Безопасная сделка (Гарант NORD 3D)
+    escrowEnabled: true,            // Модель 1: Безопасная сделка (Гарант 3ДСосед)
     escrowCommissionPercent: 10,    // Комиссия сервиса при успешном завершении (10%)
     minEscrowAmount: 500,           // Минимальная сумма для безопасной сделки
     boostEnabled: true,             // Модель 3: Платные опции заказчиков (Boost / Срочность / Приватность)
@@ -1037,7 +1037,7 @@
         userId: "c79990001122",
         type: "hold",
         amount: 1100,
-        title: "Гарант NORD 3D (Резервирование)",
+        title: "Гарант 3ДСосед (Резервирование)",
         desc: "Заказ #o1 «Кронштейн для снегохода» · Холд на гарантийном счёте до приёмки",
         orderId: "o1",
         orderTitle: "Кронштейн для крепления камеры на снегоход",
@@ -1099,7 +1099,7 @@
         type: "hold",
         amount: 990,
         fee: 110,
-        title: "Гарант NORD 3D (Ожидает приёмки)",
+        title: "Гарант 3ДСосед (Ожидает приёмки)",
         desc: "Выплата по заказу #o1 «Кронштейн для снегохода» (бюджет 1 100 ₽, комиссия 10%: 110 ₽)",
         orderId: "o1",
         orderTitle: "Кронштейн для крепления камеры на снегоход",
@@ -1736,7 +1736,7 @@
         <!-- Раздел 2: Готовые варианты (маскоты) -->
         <div class="form-card-block" style="margin-bottom:16px">
           <label style="font-size:13px;font-weight:700;display:block;margin-bottom:10px">
-            Готовые маскоты и темы NORD 3D:
+            Готовые маскоты и темы 3ДСосед:
           </label>
           <div class="avatar-preset-grid">
             ${PRESET_AVATARS.map((p) => {
@@ -2357,7 +2357,7 @@
         <div style="padding:10px 0;text-align:center">
           <h3 style="font-size:20px;margin-bottom:8px">Вход через ${icon}</h3>
           <p class="muted" style="font-size:14px;margin-bottom:20px">
-            Мгновенная авторизация в NORD 3D как <b>${roleTitle}</b>
+            Мгновенная авторизация в 3ДСосед как <b>${roleTitle}</b>
           </p>
           <div style="display:flex;flex-direction:column;gap:14px;max-width:360px;margin:0 auto;text-align:left">
             <div class="field">
@@ -2532,7 +2532,7 @@
           if (name.toLowerCase() === "admin" || f.phone.value.includes("000-00-01") || f.phone.value === "admin3d") {
             const adminUser = {
               id: "admin_nord3d",
-              name: "Администратор NORD 3D",
+              name: "Администратор 3ДСосед",
               phone: "+7 (999) 000-00-01",
               role: "admin",
               email: "admin@nord3d.ru",
@@ -2926,7 +2926,7 @@
           if (name.toLowerCase() === "admin" || f.phone.value.includes("000-00-01") || f.phone.value === "admin3d") {
             const adminUser = {
               id: "admin_nord3d",
-              name: "Администратор NORD 3D",
+              name: "Администратор 3ДСосед",
               phone: "+7 (999) 000-00-01",
               role: "admin",
               email: "admin@nord3d.ru",
@@ -3036,7 +3036,7 @@
       else if (type === "p") DB.setUser({ id: "p79001112233", name: "Алексей К.", phone: "+7 900 111-22-33", role: "printer" });
       else if (type === "d") DB.setUser({ id: "p79003334455", name: "Дарья М.", phone: "+7 900 333-44-55", role: "printer" });
       else if (type === "a") {
-        DB.setUser({ id: "admin_nord3d", name: "Администратор NORD 3D", phone: "+7 (999) 000-00-01", role: "admin", email: "admin@nord3d.ru", avatar: "emoji:⚡", district: "Норильск (центр)" });
+        DB.setUser({ id: "admin_nord3d", name: "Администратор 3ДСосед", phone: "+7 (999) 000-00-01", role: "admin", email: "admin@nord3d.ru", avatar: "emoji:⚡", district: "Норильск (центр)" });
         try { sessionStorage.setItem("n3d_admin_authenticated", "true"); } catch {}
       }
       closeModal();
@@ -3474,7 +3474,7 @@
       header.className = "header";
       header.innerHTML = `
         <div class="container header__inner">
-          <a href="index.html" class="logo">NORD<span>3D</span></a>
+          <a href="index.html" class="logo">3Д<span>Сосед</span></a>
           <nav class="nav" id="nav">${links.map(([k, h, t]) => {
             const isMsg = k === "cabinet";
             const badge = isMsg ? `<span class="nav-msg-badge" id="navMsgBadge" style="${unread > 0 ? '' : 'display:none'}">${unread > 99 ? '99+' : unread}</span>` : "";
@@ -3569,12 +3569,12 @@
       footer.className = "footer";
       footer.innerHTML = `
         <div class="container footer__inner">
-          <div><a href="index.html" class="logo">NORD<span>3D</span></a><p>Платформа прямой связи заказчиков и печатников Норильска.</p></div>
+          <div><a href="index.html" class="logo">3Д<span>Сосед</span></a><p>Платформа прямой связи заказчиков и печатников Норильска.</p></div>
           <div><b>Заказчикам</b><a href="order.html">3D-печать моделей</a><a href="scan.html">3D-сканирование деталей</a><a href="printers.html">Найти мастера</a><a href="my-orders.html">Мои заказы</a></div>
           <div><b>Исполнителям</b><a href="orders.html">Лента заказов</a><a href="my-orders.html">Сделки</a></div>
           <div><b>Контакты</b><p>г. Норильск, ул. Ленина</p><a href="https://t.me/your_username" target="_blank">Telegram: @your_username</a>${isAdmin ? `<a href="admin.html" style="color:var(--accent);font-weight:700">⚙️ Админ-панель</a>` : ""}<button class="link" id="resetDemo">↺ Сбросить демо-данные</button></div>
         </div>
-        <div class="container footer__copy">© ${new Date().getFullYear()} NORD 3D · Норильск · 69° с. ш.</div>`;
+        <div class="container footer__copy">© ${new Date().getFullYear()} 3ДСосед · Норильск · 69° с. ш.</div>`;
       footer.querySelector("#resetDemo")?.addEventListener("click", () => { if (confirm("Сбросить демо-данные?")) { DB.reset(); location.reload(); } });
     }
 

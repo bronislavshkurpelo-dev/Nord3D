@@ -1,4 +1,4 @@
-// NORD 3D — Универсальный легковесный бэкенд и веб-сервер
+// 3ДСосед — Универсальный легковесный бэкенд и веб-сервер
 // Работает на стандартной библиотеке Node.js без внешних зависимостей (Zero Dependencies)
 // Архитектура v2.0: SQLite (node:sqlite) + ACID Транзакции + WebSockets + Хранение файлов + Scrypt Auth
 const http = require('http');
@@ -365,7 +365,7 @@ const EscrowService = {
         userId: customerId,
         type: 'escrow_hold',
         amount: -amount,
-        description: `Заморозка средств (Гарант NORD 3D) по заказу #${orderId}`,
+        description: `Заморозка средств (Гарант 3ДСосед) по заказу #${orderId}`,
         orderId: orderId
       });
 
@@ -716,14 +716,14 @@ const server = http.createServer(async (req, res) => {
       const hash = hashPassword(body.password || 'nord123', salt);
 
       sqlite.prepare("INSERT OR REPLACE INTO users (id, phone, role, name, district, passwordHash, salt, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-        .run(id, phone, role, body.name || 'Пользователь NORD 3D', body.district || 'Норильск', hash, salt, Date.now());
+        .run(id, phone, role, body.name || 'Пользователь 3ДСосед', body.district || 'Норильск', hash, salt, Date.now());
 
       const token = crypto.randomBytes(32).toString('hex');
       sqlite.prepare("INSERT INTO sessions (token, userId, role, name, phone, expiresAt) VALUES (?, ?, ?, ?, ?, ?)")
-        .run(token, id, role, body.name || 'Пользователь NORD 3D', phone, Date.now() + 7 * 86400000);
+        .run(token, id, role, body.name || 'Пользователь 3ДСосед', phone, Date.now() + 7 * 86400000);
 
       const cookie = `n3d_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`;
-      const user = { id, phone, role, name: body.name || 'Пользователь NORD 3D', district: body.district || 'Норильск' };
+      const user = { id, phone, role, name: body.name || 'Пользователь 3ДСосед', district: body.district || 'Норильск' };
       return jsonResponse(res, 200, { success: true, user }, { 'Set-Cookie': cookie });
     } catch (e) {
       return jsonResponse(res, 400, { error: e.message });
@@ -1266,7 +1266,7 @@ if (require.main === module) {
     const lanIp = ips[0] ? ips[0].address : '127.0.0.1';
 
     console.log(`====================================================`);
-    console.log(` 🚀 NORD 3D Сервер готов к презентации!`);
+    console.log(` 🚀 3ДСосед Сервер готов к презентации!`);
     console.log(` 💻 На этом компьютере:       http://localhost:${PORT}`);
     console.log(` 📱 Со смартфона (по Wi-Fi):   http://${lanIp}:${PORT}`);
     console.log(` 🌐 Удалённо (через 4G / интернет): `);

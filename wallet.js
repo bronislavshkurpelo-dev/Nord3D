@@ -1,4 +1,4 @@
-// NORD 3D — Полноценный раздел «Кошелёк» для заказчиков и исполнителей
+// 3ДСосед — Полноценный раздел «Кошелёк» для заказчиков и исполнителей
 (() => {
   "use strict";
 
@@ -40,7 +40,7 @@
         <div style="font-size:48px;margin-bottom:12px">💳</div>
         <h3>Кошелёк доступен после входа</h3>
         <p class="muted" style="max-width:480px;margin:0 auto 20px">
-          Выберите роль для мгновенного входа и тестирования финансового функционала NORD 3D:
+          Выберите роль для мгновенного входа и тестирования финансового функционала 3ДСосед:
         </p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <button class="btn btn--primary" id="btnLogCust">Войти как Заказчик «Сергей» (14 300 ₽)</button>
@@ -70,7 +70,7 @@
     const isP = currentUser.role === "printer";
     $("walletSubtitle").textContent = isP
       ? "Управление заработанными средствами, вывод на банковские карты и СБП, контроль выплат по безопасным сделкам."
-      : "Управление балансом для оплаты заказов, мониторинг средств на гарантийном счёте Гарант NORD 3D и пополнение.";
+      : "Управление балансом для оплаты заказов, мониторинг средств на гарантийном счёте Гарант 3ДСосед и пополнение.";
 
     $("walletUserMeta").innerHTML = `
       <div class="userchip" style="cursor:default">
@@ -115,7 +115,7 @@
         </div>
       </div>
 
-      <!-- Карточка 2: На холде (Гарант NORD 3D) -->
+      <!-- Карточка 2: На холде (Гарант 3ДСосед) -->
       <div class="wallet-kpi-card wallet-kpi--hold">
         <div class="kpi-card-head">
           <span class="kpi-icon">🔒</span>
@@ -126,7 +126,7 @@
           ${isP ? "Ожидает подтверждения приёмки готовых деталей заказчиком" : "Заблокировано на гарантийном счёте платформы по активным заказам"}
         </p>
         <div class="kpi-note">
-          🛡️ Гарант NORD 3D: деньги защищены до проверки
+          🛡️ Гарант 3ДСосед: деньги защищены до проверки
         </div>
       </div>
 
@@ -661,7 +661,7 @@
         <div class="receipt-header">
           <div class="receipt-check-icon">✓</div>
           <h3>Квитанция операции</h3>
-          <small class="muted">NORD 3D Financial Network · Норильск</small>
+          <small class="muted">3ДСосед Financial Network · Норильск</small>
         </div>
 
         <div class="receipt-amount-badge ${colorCls}">

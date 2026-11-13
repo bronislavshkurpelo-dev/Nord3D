@@ -1,4 +1,4 @@
-// NORD 3D — Отдельный раздел управления заказами и сделками (в стиле FunPay)
+// 3ДСосед — Отдельный раздел управления заказами и сделками (в стиле FunPay)
 (() => {
   "use strict";
 
@@ -49,7 +49,7 @@
           <div style="font-size:48px;margin-bottom:12px">🛡️</div>
           <h2 style="font-size:22px;margin-bottom:6px">Управление сделками доступно после авторизации</h2>
           <p class="muted" style="max-width:480px;margin:0 auto 24px;font-size:14px;line-height:1.5">
-            Войдите как заказчик или исполнитель для контроля производства деталей, согласования выдачи и безопасных выплат Гаранта NORD 3D.
+            Войдите как заказчик или исполнитель для контроля производства деталей, согласования выдачи и безопасных выплат Гаранта 3ДСосед.
           </p>
           <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn--primary" id="btnLogGuestCust">Войти как Заказчик «Сергей»</button>
@@ -137,7 +137,7 @@
       <div class="kpi-card" style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow-sm)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:24px">🔒</span>
-          <span class="chip chip--escrow" style="font-size:11px">Гарант NORD 3D</span>
+          <span class="chip chip--escrow" style="font-size:11px">Гарант 3ДСосед</span>
         </div>
         <div style="font-size:26px;font-weight:800;color:var(--accent);margin-bottom:4px">${money(holdSum)}</div>
         <small class="muted" style="font-size:12.5px">${isP ? "Ожидает подтверждения приёмки" : "Заблокировано на гарантийном счёте"}</small>
@@ -338,7 +338,7 @@
         <!-- FunPay Timeline: 5 Этапов сделки -->
         <div style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
           <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">
-            🛡️ Этапы безопасной сделки Гарант NORD 3D
+            🛡️ Этапы безопасной сделки Гарант 3ДСосед
           </div>
           <div class="deal-timeline" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px">
             
@@ -399,7 +399,7 @@
               </span>
             ` : `
               <span class="badge" style="background:rgba(2,132,199,0.12);color:#0284c7;border:1px solid rgba(2,132,199,0.3);font-size:11.5px;font-weight:700">
-                🔒 Средства в гаранте NORD 3D
+                🔒 Средства в гаранте 3ДСосед
               </span>
             `}
           </div>
@@ -555,7 +555,7 @@
             <h3 style="font-size:20px;font-weight:800;margin-bottom:8px">Подтвердить приёмку изделия?</h3>
             <p class="muted" style="font-size:13.5px;line-height:1.5;margin-bottom:24px">
               Вы подтверждаете, что получили деталь по заказу <b>#${esc(o.id)}</b> и проверили её качество.<br><br>
-              Гарант NORD 3D перечислит вознаграждение <b>${money(payout)}</b> исполнителю на баланс кошелька.
+              Гарант 3ДСосед перечислит вознаграждение <b>${money(payout)}</b> исполнителю на баланс кошелька.
             </p>
             <div class="modal-confirm-actions">
               <button class="btn btn--ghost" id="btnCancelComplete" style="min-width:110px;height:48px">Отмена</button>

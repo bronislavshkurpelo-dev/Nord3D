@@ -47,7 +47,7 @@
     $("slicerLayers").textContent = Math.round((m.size ? m.size[2] : 40) / 0.20) || 180;
   }
 
-// NORD 3D — логика загрузки и оформления заказа со всеми 5 материалами
+// 3ДСосед — логика загрузки и оформления заказа со всеми 5 материалами
 (() => {
   "use strict";
   const { DB, DISTRICTS, MATERIALS, esc, money, estimate, uid, requireUser, qs, toast } = N3D;
@@ -224,7 +224,7 @@
         <div class="escrow-banner-card">
           <div class="escrow-banner-icon">🛡️</div>
           <div class="escrow-banner-text">
-            <b>Безопасная сделка NORD 3D включена</b>
+            <b>Безопасная сделка 3ДСосед включена</b>
             <span>Оплата резервируется на гарантийном счёте платформы (комиссия сервиса ${cfg.escrowCommissionPercent}%). Мастер получит деньги только после того, как вы подтвердите приёмку готового изделия.</span>
           </div>
         </div>

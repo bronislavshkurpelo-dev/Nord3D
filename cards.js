@@ -1,4 +1,4 @@
-// NORD 3D — карточки заказов и мастеров с онлайн-статусом, технологиями и чатом
+// 3ДСосед — карточки заказов и мастеров с онлайн-статусом, технологиями и чатом
 (() => {
   "use strict";
   const { esc, money, date, ago, avatar, stars, statusBadge, Presence, Chat, DB } = N3D;
@@ -18,7 +18,7 @@
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">
             <span class="file-badge ${isScan ? "file-badge--scan" : `file-badge--${ext.toLowerCase()}`}">${isScan ? "🔬 СКАН" : ext}</span>
             ${isUrgent ? `<span class="chip chip--urgent">⚡ СРОЧНО 24ч</span>` : ""}
-            ${isEscrow ? `<span class="chip chip--escrow" title="Сделка под защитой гаранта NORD 3D">🛡️ Гарант</span>` : ""}
+            ${isEscrow ? `<span class="chip chip--escrow" title="Сделка под защитой гаранта 3ДСосед">🛡️ Гарант</span>` : ""}
           </div>
           ${statusBadge(o.status)}
         </div>
@@ -218,7 +218,7 @@
                   </div>
                   <div style="text-align:right">
                     <div style="font-size:14px">${stars(r.score)}</div>
-                    ${r.verifiedEscrow ? `<small style="font-size:11px;color:#0ca678;font-weight:700">🛡️ Гарант NORD 3D</small>` : ""}
+                    ${r.verifiedEscrow ? `<small style="font-size:11px;color:#0ca678;font-weight:700">🛡️ Гарант 3ДСосед</small>` : ""}
                   </div>
                 </div>
                 ${r.serviceName ? `

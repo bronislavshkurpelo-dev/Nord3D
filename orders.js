@@ -1,4 +1,4 @@
-// NORD 3D — биржа заказов: фильтры, карточка заказа, чат, смена статусов
+// 3ДСосед — биржа заказов: фильтры, карточка заказа, чат, смена статусов
 (() => {
   "use strict";
   const { DB, DISTRICTS, STATUS, Presence, Chat, esc, money, date, ago, uid, avatar, stars, statusBadge, qs, openModal, closeModal, toast, requireUser, loginModal } = N3D;
@@ -119,7 +119,7 @@
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">
               <span class="file-badge ${isScan ? "file-badge--scan" : `file-badge--${ext.toLowerCase()}`}">${isScan ? "🔬 3D-сканирование" : ext}</span>
               ${isUrgent ? `<span class="chip chip--urgent">⚡ СРОЧНО 24ч</span>` : ""}
-              ${isEscrow ? `<span class="chip chip--escrow" title="Сделка под защитой гаранта NORD 3D">🛡️ Гарант сделки</span>` : ""}
+              ${isEscrow ? `<span class="chip chip--escrow" title="Сделка под защитой гаранта 3ДСосед">🛡️ Гарант сделки</span>` : ""}
               ${isPrivate ? `<span class="chip" style="background:rgba(100,116,139,0.12);color:#475569;border-color:rgba(100,116,139,0.3)">🔒 Приватный</span>` : ""}
               ${needsModeling ? `<span class="chip" style="background:rgba(112,72,232,0.1);color:#7048e8;border-color:rgba(112,72,232,0.3)">📐 Моделирование</span>` : ""}
             </div>
@@ -138,7 +138,7 @@
           <div class="escrow-banner-card" style="margin:16px 0">
             <div class="escrow-banner-icon">🛡️</div>
             <div class="escrow-banner-text">
-              <b>Оплата под защитой гаранта NORD 3D</b>
+              <b>Оплата под защитой гаранта 3ДСосед</b>
               <span>Бюджет ${money(o.budget)} зарезервирован на безопасном счёте. Мастер гарантированно получит выплату после того, как заказчик проверит готовую деталь.</span>
             </div>
           </div>

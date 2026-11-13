@@ -1,4 +1,4 @@
-// NORD 3D — логика оформления заказа на 3D-сканирование и реверс-инжиниринг
+// 3ДСосед — логика оформления заказа на 3D-сканирование и реверс-инжиниринг
 (() => {
   "use strict";
   const { DB, DISTRICTS, money, uid, requireUser, toast, compressImage, openPhotoModal } = N3D;
@@ -210,7 +210,7 @@
         <div class="escrow-banner-card">
           <div class="escrow-banner-icon">🛡️</div>
           <div class="escrow-banner-text">
-            <b>Безопасная сделка NORD 3D включена</b>
+            <b>Безопасная сделка 3ДСосед включена</b>
             <span>Оплата резервируется на гарантийном счёте сервиса (комиссия ${cfg.escrowCommissionPercent}%). Средства поступят мастеру только после того, как вы примете готовую 3D-модель или деталь.</span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 {
-  "name": "nord3d-norilsk",
+  "name": "3dsosed",
   "version": "1.0.0",
-  "description": "Платформа прямой связи заказчиков и мастеров 3D-печати и 3D-сканирования в Норильске",
+  "description": "3ДСосед — Распределённая биржа 3D-печати в Норильске",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,7 +14,7 @@
     "norilsk",
     "manufacturing"
   ],
-  "author": "NORD 3D Team",
+  "author": "3ДСосед Team",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

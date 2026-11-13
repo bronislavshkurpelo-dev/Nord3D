@@ -1,4 +1,4 @@
-// NORD 3D — раздел портфолио мастеров с фото выполненных работ и подтверждёнными отзывами заказчиков
+// 3ДСосед — раздел портфолио мастеров с фото выполненных работ и подтверждёнными отзывами заказчиков
 (() => {
   "use strict";
 
@@ -80,7 +80,7 @@
             <div>
               <b>Вы мастер 3D-печати в Норильске?</b>
               <span class="muted" style="font-size:13px;display:block">
-                Разместите свои лучшие работы в витрине NORD 3D и получайте прямые заказы от жителей города.
+                Разместите свои лучшие работы в витрине 3ДСосед и получайте прямые заказы от жителей города.
               </span>
             </div>
             <button class="btn btn--ghost" id="btnJoinAsPrinter">Войти как исполнитель</button>
@@ -320,8 +320,8 @@
           </div>
 
           ${hasVerifiedReview ? `
-            <div class="portfolio-card__verified-badge" title="Заказ выполнен через NORD 3D со 100% безопасной сделкой">
-              🛡️ Заказ с NORD 3D
+            <div class="portfolio-card__verified-badge" title="Заказ выполнен через 3ДСосед со 100% безопасной сделкой">
+              🛡️ Заказ с 3ДСосед
             </div>
           ` : ''}
         </div>
@@ -434,7 +434,7 @@
             <div class="portfolio-link-block__header">
               <label for="portOrderSelect" class="portfolio-link-block__label">
                 <span class="portfolio-link-block__icon">🛡️</span>
-                <span>Привязать к заказу с сайта NORD 3D</span>
+                <span>Привязать к заказу с сайта 3ДСосед</span>
               </label>
               <span class="badge" style="background:rgba(12,166,120,0.14);color:#0ca678;border:1px solid rgba(12,166,120,0.3);font-size:11.5px;font-weight:700">Официальный отзыв</span>
             </div>

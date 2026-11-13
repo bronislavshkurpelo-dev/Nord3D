@@ -1,4 +1,4 @@
-// NORD 3D — Раздел «Рейтинг и репутация мастера» с финансовым статусом и оценками за услуги
+// 3ДСосед — Раздел «Рейтинг и репутация мастера» с финансовым статусом и оценками за услуги
 (() => {
   "use strict";
 
@@ -91,7 +91,7 @@
         </div>
         <div class="kpi-amount">${money(wallet.hold || 990)}</div>
         <p class="kpi-desc">
-          Заказы в производстве под защитой Гаранта NORD 3D
+          Заказы в производстве под защитой Гаранта 3ДСосед
         </p>
         <div class="kpi-note">
           🛡️ Выплата сразу после подтверждения приёмки
@@ -124,12 +124,12 @@
       <div class="master-rep-inner">
         <div class="master-rep-avatar-wrap">
           ${avatar(master, 72)}
-          <span class="rep-verified-badge" title="Верифицированный исполнитель NORD 3D">🛡️</span>
+          <span class="rep-verified-badge" title="Верифицированный исполнитель 3ДСосед">🛡️</span>
         </div>
         <div class="master-rep-info">
           <div class="master-rep-title-line">
             <h2>${esc(master.name)}</h2>
-            <span class="status status--ready">✓ Проверенный мастер NORD 3D</span>
+            <span class="status status--ready">✓ Проверенный мастер 3ДСосед</span>
           </div>
           <p class="muted" style="margin:4px 0 10px;font-size:13.5px">
             📍 <b>${esc(master.district)}</b> · В сервисе с <b>${master.since || "2022"} года</b> · Телефон: <b>${esc(master.phone)}</b>
@@ -284,7 +284,7 @@
 
         <div class="review-footer">
           <span class="review-escrow-badge">
-            <span style="color:#0ca678">🛡️</span> Сделка подтверждена платформой NORD 3D (Гарант сделки)
+            <span style="color:#0ca678">🛡️</span> Сделка подтверждена платформой 3ДСосед (Гарант сделки)
           </span>
           <div class="review-subscores">
             <span>Точность: <b>${r.accuracyScore || 5}★</b></span>
